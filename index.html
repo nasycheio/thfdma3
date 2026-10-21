@@ -1,0 +1,2252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body { margin: 0; font: 14px system-ui, -apple-system, sans-serif; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>종말 예언: 어둠 탐사 기록</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;800&family=Roboto:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&family=Jua&family=Gothic+A1:wght@200;300&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Gothic:wght@400;700&display=swap">
+<style>
+  /* 레이아웃: 가로 화면 전체를 쓰는 단일 무대. 검은 화면 → 신호 붕괴 → 타이틀 → 룰렛 → 카드 → 오류 */
+  :root {
+    --void: #000000;
+    --signal: #f2f2ee;
+    --static: #9a9a96;
+    --dim: #4a4a48;
+    --bleed-r: #ff2a3c;
+    --bleed-c: #22e6ff;
+    --title: "Nanum Myeongjo", "Noto Serif KR", "Batang", serif;
+    --mono: "Nanum Gothic Coding", "D2Coding", ui-monospace, monospace;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(ellipse at 50% 40%, #1a1b1e 0%, #0a0a0b 70%);
+    color: var(--signal);
+    overflow: hidden;
+    display: grid; place-items: center;
+    padding-block: 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+  }
+
+  /* 갤럭시 S25 울트라 (검정): 어제 만든 폰과 같은 비율·모서리·버튼 */
+  .phone {
+    position: absolute; left: 50%; top: 50%;
+    width: 428px; height: 908px;
+    transform: translate(-50%, -50%); transform-origin: center center;
+    border-radius: 40px; padding: 3px;
+    background: linear-gradient(145deg, #4a4b50, #17181a 35%, #34353a 68%, #0e0f10);
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255,255,255,.22),
+      0 0 0 1px rgba(0,0,0,.5),
+      0 40px 80px -20px rgba(0,0,0,.6),
+      0 18px 36px -18px rgba(0,0,0,.5);
+  }
+  .phone, .phone__glass, .phone__screen { box-sizing: border-box; }
+  .phone__btn { z-index: 2; }
+  .phone__glass { width: 100%; height: 100%; padding: 5px; border-radius: 37px; background: #000; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  .phone__btn { position: absolute; right: -3px; width: 3px; border-radius: 0 2px 2px 0; background: linear-gradient(90deg, #2a2b2e, #5c5e63); }
+  .phone__btn.pwr { top: 18.8%; height: 7.3%; }
+  .phone__btn.vol { top: 29.9%; height: 11.5%; }
+  .phone__screen {
+    position: relative; width: 100%; height: 100%;
+    border-radius: 32px;
+    overflow: hidden; background: #000;
+    container-type: size;
+    transform: translateZ(0);
+  }
+  .phone__cam {
+    position: absolute; z-index: 62; top: 13px; left: 50%; transform: translateX(-50%);
+    width: 15px; height: 15px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, #10172b 0 28%, #000 32%);
+    box-shadow: 0 0 0 1.5px #0c0d10;
+    pointer-events: none;
+  }
+  .sbar {
+    position: absolute; z-index: 61; top: 0; left: 0; right: 0; height: 46px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 28px 0 30px;
+    font-family: "Roboto", "Noto Sans KR", sans-serif; font-weight: 500; font-size: 14.5px; letter-spacing: 0;
+    color: #fff; mix-blend-mode: difference; pointer-events: none;
+  }
+  .sbar__r { display: flex; align-items: center; gap: 5px; font-size: 12.5px; }
+  .sbar__bat { width: 20px; height: 9px; border: 1px solid #fff; border-radius: 2px; position: relative; }
+  .sbar__bat::before { content: ""; position: absolute; inset: 1px; width: 62%; background: #fff; }
+  .sbar__bat::after { content: ""; position: absolute; right: -3px; top: 2px; width: 2px; height: 3px; background: #fff; border-radius: 0 1px 1px 0; }
+  .navpill.tap { pointer-events: auto; cursor: pointer; opacity: .9; animation: hintBlink 1.4s steps(1) infinite; }
+  .navpill.tap::after { content: ""; position: absolute; inset: -14px -20px; }
+  .navpill {
+    position: absolute; z-index: 61; bottom: 1%; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 4px; border-radius: 3px; background: #fff; opacity: .7; bottom: 9px; mix-blend-mode: difference; pointer-events: none;
+  }
+
+  .stage { position: absolute; inset: 0; background: var(--void); overflow: hidden; }
+
+  /* 접속 게이트 */
+  .gate {
+    position: absolute; inset: 0; z-index: 50;
+    display: grid; place-items: center;
+    background: var(--void);
+    border: 0; padding: 0; width: 100%;
+    font-family: var(--mono); color: var(--dim);
+    cursor: pointer;
+  }
+  .gate:focus-visible { outline: 1px solid var(--dim); outline-offset: -8px; }
+  /* 꺼져 있는 화면: 유리에 비친 희미한 반사만 보인다 */
+  .gate { background: linear-gradient(125deg, rgba(255,255,255,.035) 0%, transparent 28%, transparent 70%, rgba(255,255,255,.02) 100%), #000; align-items: end; }
+  .gate__note { margin-bottom: 9%; font-size: 10.9px; letter-spacing: 0.06em; color: #2c2c2c; }
+  .phone__screen.off .sbar, .phone__screen.off .navpill { opacity: 0; }
+  .sbar, .navpill { transition: opacity .4s; }
+  .phone__btn.pwr { cursor: pointer; }
+  .phone__btn.pwr.nudge { animation: pwrNudge 2.4s ease-in-out infinite; }
+  @keyframes pwrNudge { 50% { background: linear-gradient(90deg, #6a6c72, #4a4b4f); } }
+  /* 잠금화면 */
+  .lock {
+    position: absolute; inset: 0; z-index: 51; touch-action: none;
+    display: flex; flex-direction: column; align-items: center;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.45)),
+      radial-gradient(ellipse 120% 60% at 20% 10%, #2a3a5a 0%, transparent 60%),
+      radial-gradient(ellipse 100% 70% at 90% 90%, #3b2a52 0%, transparent 60%),
+      linear-gradient(170deg, #121a2b, #0d0f18 60%, #161021);
+    color: #fff; font-family: "Roboto", "Noto Sans KR", sans-serif;
+    animation: screenOn .45s ease-out both;
+    transition: transform .35s cubic-bezier(.3,.8,.3,1), opacity .35s;
+  }
+  .lock.away { transform: translateY(-18%); opacity: 0; pointer-events: none; }
+  .lock__clock { margin-top: 82px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .lock__date { order: 0; margin: 0; font-family: "Roboto", "Noto Sans KR", sans-serif; font-weight: 400; font-size: 17px; color: rgba(255,255,255,.92); }
+  .lock__time { order: 1; margin: 2px 0 0; font-family: "Roboto", "Noto Sans KR", sans-serif; font-weight: 300; font-size: 96px; line-height: 1.05; letter-spacing: -2px; color: rgba(255,255,255,.95); font-variant-numeric: tabular-nums; }
+  .lock__stack {
+    position: relative; margin-top: 14%; width: 88%; height: 96px;
+    padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  }
+  .noti {
+    position: absolute; left: 0; right: 0; top: 0; height: 84px; border-radius: 22px;
+    background: rgba(38,38,44,.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.3);
+  }
+  .noti--2 { transform: translateY(8px) scale(.95); opacity: .7; }
+  .noti--3 { transform: translateY(15px) scale(.9); opacity: .45; }
+  .noti--1 { display: grid; align-content: center; gap: 3px; padding: 0 16px; }
+  .noti__head { display: flex; align-items: center; gap: 6px; font-size: 11.9px; opacity: .85; }
+  .noti__icon { width: 15px; height: 15px; border-radius: 5px; background: #000; position: relative; overflow: hidden; }
+  .noti__icon::before, .noti__icon::after { content: ""; position: absolute; left: -2px; right: -2px; top: 6.5px; height: 2px; background: #f2c400; transform: rotate(45deg); }
+  .noti__icon::after { transform: rotate(-45deg); }
+  .noti__when { margin-left: auto; opacity: .7; }
+  .noti__title { font-size: 15.3px; font-weight: 400; }
+  .noti__body { font-size: 13.1px; font-weight: 300; opacity: .8; }
+  .noti__more { position: absolute; right: 14px; bottom: 10px; font-size: 11.9px; padding: 1px 7px; border-radius: 9px; background: rgba(255,255,255,.18); }
+  .lock__hint { margin: auto 0 13%; font-size: 13.1px; font-weight: 300; opacity: .75; }
+  .lock__hint.bounce { animation: hintBounce .5s ease; }
+  @keyframes hintBounce { 30% { transform: translateY(-8px); } 60% { transform: translateY(2px); } }
+
+  /* 켜자마자 보이는 이상하게 텅 빈 홈 화면 */
+  .home {
+    position: absolute; inset: 0; z-index: 49;
+    display: grid; place-items: center;
+    background:
+      radial-gradient(ellipse 120% 60% at 20% 10%, #2a3a5a 0%, transparent 60%),
+      radial-gradient(ellipse 100% 70% at 90% 90%, #3b2a52 0%, transparent 60%),
+      linear-gradient(170deg, #121a2b, #0d0f18 60%, #161021);
+    animation: screenOn .45s ease-out both;
+  }
+  @keyframes screenOn { from { opacity: 0; filter: brightness(2); } to { opacity: 1; filter: none; } }
+  .home__app {
+    width: 18cqw; aspect-ratio: 1; max-width: 100%; padding: 0; border: 0;
+    border-radius: 30%; overflow: hidden;
+    background: linear-gradient(160deg, #1a1a1a, #000);
+    box-shadow: 0 6px 16px rgba(0,0,0,.45);
+    cursor: pointer; transition: transform .12s;
+  }
+  .home__app svg { display: block; width: 100%; height: 100%; }
+  .home__app:active { transform: scale(.92); }
+  .home__item { display: grid; justify-items: center; gap: 7px; }
+  .home__label {
+    font-family: "Gothic A1", "Nanum Gothic", sans-serif; font-weight: 300; font-size: 11.9px; letter-spacing: .02em;
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap;
+  }
+  /* 다른 데를 누르면: 안 된다는 듯 고개를 젓는다 */
+  .home__item.nope { animation: nope .42s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes nope {
+    10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); }
+  }
+  .home.jolt { animation: jolt .18s steps(2) both; }
+  @keyframes jolt { 50% { transform: translate(2px, -1px); filter: brightness(1.15) hue-rotate(-12deg); } }
+  /* 상단 알림 배너 */
+  .hbanner {
+    position: absolute; z-index: 3; left: 10px; right: 10px; top: 44px;
+    display: grid; gap: 4px; padding: 13px 16px; border-radius: 24px;
+    background: rgba(38,38,44,.94); color: #fff;
+    font-family: "Roboto", "Noto Sans KR", sans-serif;
+    box-shadow: 0 8px 26px rgba(0,0,0,.45);
+    transform: translateY(-140%); opacity: 0; pointer-events: none;
+    transition: transform .32s cubic-bezier(.2,.9,.3,1), opacity .25s;
+  }
+  .hbanner.on { transform: none; opacity: 1; }
+  .hbanner__text { font-size: 15px; white-space: nowrap; overflow: hidden; }
+  .home__tint { position: absolute; inset: 0; background: #7a0010; opacity: 0; pointer-events: none; transition: opacity .5s; }
+  .home__tint.on { opacity: .18; transition: none; }
+  .home__app:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+  .launch { position: absolute; inset: 0; z-index: 52; background: #000; overflow: hidden; }
+  .launch svg { display: block; width: 100%; height: 100%; transition: opacity .7s; }
+  .launch.fade svg { opacity: 0; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* 노이즈 */
+  canvas.noise {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    image-rendering: pixelated; opacity: 0;
+    mix-blend-mode: screen;
+  }
+  .scan {
+    position: absolute; inset: 0; pointer-events: none; z-index: 20;
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.35) 2px 3px);
+    opacity: 0; transition: opacity .4s;
+  }
+  .stage.live .scan { opacity: 1; }
+  .vignette {
+    position: absolute; inset: 0; pointer-events: none; z-index: 21;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.85) 100%);
+  }
+  .tears { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
+  .tear { position: absolute; left: 0; right: 0; background: var(--signal); mix-blend-mode: difference; }
+  .tear.red { background: #e3101c; mix-blend-mode: screen; }
+  .wheel {
+    position: absolute; inset: 0; z-index: 12;
+    display: grid; place-items: center;
+    opacity: 0; transition: opacity 4.5s ease-in;
+    pointer-events: none;
+  }
+  .wheel.on { opacity: .3; }
+  .wheel.on.lit { opacity: .48; transition: opacity .25s; }
+  .wheel svg { width: min(74cqh, 64cqw); height: auto; max-width: 100%; overflow: visible; filter: brightness(.38) contrast(1.1); }
+  .blackout { position: absolute; inset: 0; background: var(--void); z-index: 18; opacity: 0; pointer-events: none; }
+
+  /* 타이틀 */
+  .title-wrap {
+    position: absolute; inset: 0; z-index: 10;
+    display: grid; place-items: center;
+    opacity: 0;
+  }
+  .title-wrap.on { opacity: 1; }
+  .title {
+    position: relative;
+    margin: 0;
+    font-family: var(--title); font-weight: 800;
+    font-size: clamp(14.2px, 5.01cqw, 43.6px);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: var(--signal);
+    text-shadow: 0 0 18px rgba(242,242,238,.18);
+  }
+  .title.glitch {
+    text-shadow: -3px 0 var(--bleed-r), 3px 0 var(--bleed-c), 0 0 18px rgba(242,242,238,.2);
+  }
+  .slash {
+    position: absolute; left: -5%; right: -5%; top: 52%;
+    height: max(2px, 0.07em);
+    background: var(--signal);
+    box-shadow: 0 0 10px rgba(255,255,255,.75), 0 0 30px rgba(255,255,255,.35);
+    transform-origin: left center;
+    transform: rotate(-1.2deg) scaleX(0);
+  }
+  .slash.cut { transition: transform 150ms cubic-bezier(.7,0,.2,1); transform: rotate(-1.2deg) scaleX(1); }
+
+  /* 룰렛 밑에서 뱉어지는 회색 카드 (작은 사원증 크기) */
+  .tray { position: absolute; left: 0; right: 0; bottom: 0; z-index: 22; overflow: hidden; pointer-events: none; }
+  .card {
+    position: absolute; left: 50%; top: 0;
+    width: clamp(26px, 4.6cqh, 44px); aspect-ratio: 54 / 86; max-width: 100%;
+    padding: 0; border: 0; border-radius: 3px;
+    background: linear-gradient(165deg, #5e5e5a, #474744 55%, #3a3a37);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 4px 10px rgba(0,0,0,.85);
+    cursor: pointer; pointer-events: auto;
+    transform: translate(-50%, -110%);
+  }
+  .card::before {
+    content: ""; position: absolute; left: 50%; top: 7%; width: 34%; height: 5%;
+    transform: translateX(-50%); border-radius: 2px; background: #1c1c1a;
+  }
+  .card::after {
+    content: ""; position: absolute; inset: -2px; border-radius: 4px;
+  }
+  .card:hover { filter: brightness(1.15); }
+  .card:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+  /* 오류창: 갤럭시(One UI) 경고 대화상자 */
+  .errs { position: absolute; inset: 0; z-index: 23; overflow: hidden; pointer-events: none; }
+  .err {
+    position: absolute; width: 268px; max-width: 78cqw;
+    padding: 22px 22px 10px; border-radius: 26px;
+    background: rgba(252,252,252,.84); color: #111;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    font-family: "Roboto", "Noto Sans KR", sans-serif;
+  }
+  .err__title { margin: 0 0 8px; font-size: 18px; font-weight: 500; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
+  .err__title i { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #e5463a; position: relative; }
+  .err__title i::before { content: ""; position: absolute; left: 9px; top: 4px; width: 2px; height: 8px; border-radius: 1px; background: #fff; }
+  .err__title i::after { content: ""; position: absolute; left: 9px; top: 14px; width: 2px; height: 2px; border-radius: 1px; background: #fff; }
+  .err__msg { margin: 0; font-size: 15px; line-height: 1.45; color: #3b3b3b; white-space: nowrap; overflow: hidden; }
+  .err__btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 14px; }
+  .err__btns span { padding: 10px 14px; font-size: 15px; font-weight: 500; color: #3e7bff; }
+  .err.in { animation: errIn .26s steps(1) both; }
+  @keyframes errIn {
+    0% { opacity: 0; } 15% { opacity: 1; transform: translateX(10px); clip-path: inset(0 0 55% 0); }
+    35% { opacity: 0; } 55% { opacity: 1; transform: translateX(-6px); clip-path: inset(35% 0 0 0); }
+    75% { opacity: .5; transform: none; clip-path: none; } 100% { opacity: 1; }
+  }
+
+  /* 터치 후: 거짓말 / 써내려가는 글자 */
+  .scrawl {
+    position: absolute; inset: 0; z-index: 25; overflow: hidden; pointer-events: none;
+    padding: max(18px, env(safe-area-inset-top, 0px)) max(22px, env(safe-area-inset-right, 0px)) 18px max(22px, env(safe-area-inset-left, 0px));
+    margin: 0; white-space: pre-wrap; word-break: keep-all;
+    font-family: var(--title); font-weight: 800;
+    font-size: clamp(16.4px, 1.93cqw, 26.2px); line-height: 1.4;
+    color: #d0101c; text-shadow: 0 0 6px rgba(208,16,28,.45);
+  }
+  .lie {
+    position: absolute; left: 50%; top: 50%; z-index: 26; margin: 0;
+    transform: translate(-50%, -50%);
+    font-family: var(--title); font-weight: 800;
+    font-size: 16cqw; letter-spacing: .02em; white-space: nowrap;
+    color: #e0101c; text-shadow: 0 0 24px rgba(224,16,28,.55), 0 0 2px #000;
+  }
+  .lie.hit { animation: lieHit .35s steps(1) both; }
+  @keyframes lieHit {
+    0% { opacity: 0; } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+    30% { opacity: .2; } 45% { opacity: 1; transform: translate(calc(-50% + 6px), -50%); } 100% { opacity: 1; transform: translate(-50%, -50%); }
+  }
+
+  .flash { position: absolute; inset: 0; z-index: 27; background: #b5000c; opacity: 0; pointer-events: none; mix-blend-mode: normal; }
+  .bright { position: absolute; inset: 0; z-index: 28; background: #f6f6f2; }
+  .mcursor {
+    position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px;
+    border-radius: 50%; border: 3.5px solid rgba(0,0,0,.1); border-top-color: #3e7bff;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes mblink { 50% { opacity: 0; } }
+  .choice {
+    position: absolute; left: 50%; top: 62%; transform: translateX(-50%);
+    min-width: min(260px, 70cqw); padding: 14px 28px;
+    background: #a3a39e; color: #1b1b19; border: 0; border-radius: 2px;
+    font-family: var(--mono); font-size: 17.4px; letter-spacing: .04em; cursor: pointer;
+  }
+  .choice:hover { background: #8f8f8a; }
+  .choice:focus-visible { outline: 2px solid #1b1b19; outline-offset: 3px; }
+  .appscreen { position: absolute; inset: 0; z-index: 29; display: grid; place-items: center; background: #f6f6f2; }
+  .appicon {
+    width: 18cqw; aspect-ratio: 1; max-width: 100%; padding: 0; border: 0;
+    border-radius: 30%; background: linear-gradient(160deg, #1a1a1a, #000);
+    box-shadow: 0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
+    cursor: pointer; transition: transform .12s;
+    overflow: hidden;
+  }
+  .appicon svg { display: block; width: 100%; height: 100%; }
+  .appicon:hover { transform: scale(1.04); }
+  .appicon:active { transform: scale(.94); }
+  .appicon:focus-visible { outline: 2px solid #111; outline-offset: 4px; }
+  .appicon.popin { animation: popin .35s cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes popin { from { transform: scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
+  .toast {
+    position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%);
+    margin: 0; padding: 12px 22px; border-radius: 22px;
+    background: rgba(40,40,42,.92); color: #fff; white-space: pre; text-align: center;
+    font-family: "Gothic A1", "Nanum Gothic", sans-serif; font-weight: 300; font-size: 14.2px; line-height: 1.5;
+    animation: toastIn .25s ease-out both;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translateX(-50%); } }
+  .xscreen {
+    position: absolute; inset: 0; z-index: 29; padding: 0; border: 0;
+    background: #000; cursor: default; overflow: hidden;
+  }
+  .xscreen svg { display: block; width: 100%; height: 100%; }
+  .conn {
+    position: absolute; inset: 0; z-index: 30;
+    display: grid; place-items: center;
+    background: #f6f6f2; color: #111;
+  }
+  .conn__box { display: grid; gap: 14px; justify-items: center; transition: opacity .6s; }
+  .conn__label { margin: 0; font-family: var(--mono); font-size: 16.4px; letter-spacing: .06em; }
+  .conn__bar { width: min(280px, 60cqw); height: 10px; border: 1px solid #111; padding: 1px; }
+  .conn__bar i { display: block; height: 100%; width: 0; background: #111; }
+  .conn__end {
+    grid-area: 1 / 1; margin: 0; white-space: pre; text-align: center;
+    font-family: var(--mono); font-weight: 700;
+    font-size: clamp(16.4px, 1.83cqw, 24.0px); line-height: 1.6;
+    opacity: 0; transition: opacity 1.8s ease;
+  }
+  .conn__box { grid-area: 1 / 1; }
+  .conn.done .conn__end { opacity: 1; }
+  .choice--low { top: auto; bottom: 9%; }
+  /* 화면 캡처본 */
+  .shot {
+    position: absolute; inset: 0; z-index: 43; pointer-events: none;
+    transform-origin: 50% 46%;
+    transition: transform .45s cubic-bezier(.2,.8,.25,1), box-shadow .45s, border-radius .45s;
+    border-radius: 0; overflow: hidden;
+  }
+  .shot > .conn { position: absolute; inset: 0; }
+  .shot.small { transform: scale(.66); border-radius: 18px; box-shadow: 0 0 0 4px #fff, 0 18px 50px rgba(0,0,0,.45), 0 0 0 1200px rgba(0,0,0,.42); overflow: hidden; }
+  .shot { overflow: visible; }
+  .shot > .conn { border-radius: inherit; overflow: hidden; }
+  /* 어두운 방의 자판기 */
+  .vend {
+    position: absolute; inset: 0; z-index: 31;
+    display: grid; place-items: center;
+    background: radial-gradient(ellipse at 50% 60%, #0b0b0c 0%, #020202 70%);
+  }
+  .vend__svg { height: min(84cqh, 560px); width: auto; max-width: 100%; filter: brightness(.55); opacity: 0; transition: opacity 3s ease; }
+  .vend.on .vend__svg { opacity: 1; }
+  /* 크게 보이는 사원증 */
+  .idbig { position: absolute; inset: 0; z-index: 34; display: grid; place-items: center; background: rgba(0,0,0,.55); }
+  /* 은색 사원증: 사진 없이 얇은 흰 글씨, 오래 써서 낡은 느낌 */
+  .idbig__card {
+    --H: min(66cqh, 430px);
+    position: relative; height: var(--H); aspect-ratio: 54 / 86; max-width: 100%;
+    border-radius: 14px; overflow: hidden;
+    background: linear-gradient(160deg, #babdc1 0%, #a3a7ac 45%, #8e9297 100%);
+    box-shadow: 0 24px 60px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.35);
+    display: flex; flex-direction: column; align-items: center;
+    z-index: 1;
+  }
+  .idbig__rig {
+    --H: min(66cqh, 430px);
+    position: relative;
+    transform: scale(.06); opacity: 0;
+    transition: transform .45s cubic-bezier(.2,.9,.25,1.05), opacity .2s;
+  }
+  .idbig.on .idbig__rig { transform: rotate(-1.2deg); opacity: 1; }
+  /* 전단지가 날아와 화면에 착 붙듯이 */
+  .idbig.fly .idbig__rig { animation: flyin .8s cubic-bezier(.3,1.18,.4,1) both; }
+  @keyframes flyin {
+    from { opacity: .3; transform: perspective(800px) translate(-55%, -65%) rotateX(50deg) rotateY(-30deg) rotateZ(-35deg) scale(.12); }
+    to   { opacity: 1; transform: perspective(800px) translate(0, 0) rotateX(0) rotateY(0) rotateZ(-1.2deg) scale(1); }
+  }
+  .idbig.thump { animation: thump .22s linear; }
+  @keyframes thump { 30% { transform: translate(3px, 2px); } 60% { transform: translate(-2px, -1px); } }
+  .idbig.slow .idbig__rig { transform: scale(.22); filter: brightness(.12); transition: transform 3.4s cubic-bezier(.12,.7,.2,1), opacity 1.4s, filter 3.4s; }
+  .idbig.slow.on .idbig__rig { transform: rotate(-1.2deg); filter: none; }
+  .idbig.dark { background: #000; }
+  .idbig__holo {
+    width: 19%; aspect-ratio: 1; border-radius: 50%;
+    background: conic-gradient(from 30deg, #c9f7ff, #f8d3ff, #fff7b8, #c8ffd8, #c9e0ff, #c9f7ff);
+    opacity: .6; mix-blend-mode: overlay;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.4);
+  }
+  .idbig__text {
+    text-shadow: 0 -1px 0 rgba(0,0,0,.28), 0 1px 0 rgba(255,255,255,.12);
+    margin: 0; width: 82%; display: grid; justify-items: center; text-align: center;
+    font-family: "Gothic A1", "Nanum Gothic", sans-serif; font-weight: 300; color: #fff;
+    white-space: nowrap; line-height: 1.25;
+    text-shadow: 0 1px 1px rgba(0,0,0,.35), 0 0 8px rgba(0,0,0,.15);
+  }
+  .idbig__hole { flex: none; width: 22%; height: 2.4%; margin-top: 6%; border-radius: 99px; background: #111214; box-shadow: inset 0 1px 2px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.4); }
+  .idbig__emblem {
+    width: calc(var(--H) * .14); aspect-ratio: 1; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.85); box-shadow: 0 0 0 calc(var(--H) * .008) rgba(255,255,255,.2), inset 0 0 0 calc(var(--H) * .012) rgba(255,255,255,.14);
+    display: grid; place-items: center;
+  }
+  .idbig__emblem i { width: 34%; aspect-ratio: 1; border: 1px solid rgba(255,255,255,.9); transform: rotate(45deg); }
+  .idbig__no { font-family: "Gothic A1", "Nanum Gothic", sans-serif; font-weight: 300; color: rgba(255,255,255,.9); font-size: calc(var(--H) * .024); letter-spacing: .18em; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
+  .idbig__head { margin-top: 6%; display: grid; justify-items: center; gap: calc(var(--H) * .022); }
+  .idbig__head .idbig__emblem { margin-top: 0; }
+  .idt { color: #fff; font-family: "Gothic A1", "Nanum Gothic", sans-serif; font-weight: 300; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,.28); }
+  .idt1 { font-size: calc(var(--H) * .036); letter-spacing: .12em; }
+  .idbig__fields { margin: 7% 0 0; width: 74%; display: grid; gap: calc(var(--H) * .016); }
+  .idbig__fields div { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: calc(var(--H) * .01); border-bottom: 1px solid rgba(255,255,255,.45); }
+  .idbig__fields dt { font-family: "Gothic A1", "Nanum Gothic", sans-serif; font-weight: 300; font-size: calc(var(--H) * .026); color: rgba(255,255,255,.8); letter-spacing: .2em; }
+  .idbig__fields dd { margin: 0; font-family: "Gothic A1", "Nanum Gothic", sans-serif; font-weight: 300; font-size: calc(var(--H) * .028); color: #fff; letter-spacing: .08em; }
+  .idrule { width: 74%; height: 1px; margin: 6% 0 6%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.8) 15% 85%, transparent); }
+  .idt2 { font-size: calc(var(--H) * .062); font-weight: 200; letter-spacing: .1em; }
+  .idt3 { margin-top: 4%; font-size: calc(var(--H) * .034); letter-spacing: .22em; }
+  .idbig__foot {
+    margin-top: auto; width: 82%; margin-bottom: 7%;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  /* 검은 상자 */
+  .note { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(0,0,0,.45); }
+  .note__text {
+    margin: 0; padding: clamp(24px, 5cqh, 44px) clamp(26px, 5cqw, 56px);
+    background: #000; border: 1px solid #3a3a38;
+    white-space: pre; text-align: center;
+    font-family: var(--mono); font-weight: 700; font-size: clamp(15.3px, 1.93cqw, 24.0px); line-height: 1.6;
+    color: var(--signal);
+    max-width: calc(100cqw - 32px); overflow-x: auto;
+  }
+  .note__strike { position: relative; }
+  .note__strike::after {
+    content: ""; position: absolute; left: -6%; right: -6%; top: 52%; height: 3px;
+    background: #e0101c; transform: rotate(-3deg); box-shadow: 0 0 6px rgba(224,16,28,.6);
+  }
+  .note__red { color: #e0101c; font-family: var(--title); font-weight: 800; font-style: italic; }
+  .note__text { position: relative; overflow: visible; }
+  .spill {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    width: min(150%, calc(100cqw - 32px));
+    white-space: normal; word-break: keep-all; text-align: center;
+    color: #e0101c; line-height: 1.6; font-family: var(--title); font-weight: 800;
+    font-style: italic;
+    text-shadow: 0 0 6px rgba(224,16,28,.4);
+  }
+  /* 쏟아지는 작은 사원증 */
+  .rain { position: absolute; inset: 0; z-index: 36; overflow: hidden; pointer-events: none; }
+  .mini {
+    position: absolute; left: 0; top: 0; padding: 0; border: 0;
+    border-radius: 4px; overflow: hidden; cursor: pointer; pointer-events: auto;
+    background: radial-gradient(ellipse 40% 20% at 70% 70%, rgba(70,52,30,.25), transparent 70%), linear-gradient(155deg, #6f7276 0%, #a9aca9 30%, #7f8284 55%, #b1b2ad 78%, #66686a 100%);
+    box-shadow: 0 3px 8px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.2), inset 0 0 8px rgba(40,30,20,.4);
+    display: flex; flex-direction: column; align-items: center;
+    filter: brightness(.75); will-change: transform;
+  }
+  .mini:hover { filter: brightness(.95); }
+  .mini i { display: block; }
+  .mini__hole { width: 24%; height: 3%; margin-top: 8%; border-radius: 9px; background: #1b1c1e; }
+  .mini__line { width: 58%; height: 1.6%; margin-top: 34%; background: rgba(255,255,255,.85); }
+  .mini__line.s { width: 40%; margin-top: 7%; }
+  /* 하얀 상자 */
+  .wbox { position: absolute; inset: 0; z-index: 37; display: grid; place-items: center; background: rgba(0,0,0,.35); }
+  .wbox__text {
+    margin: 0; padding: clamp(24px, 5cqh, 44px) clamp(26px, 5cqw, 56px);
+    background: #f4f4f0; color: #111; border: 1px solid #000;
+    white-space: pre; text-align: center;
+    font-family: var(--mono); font-weight: 700; font-size: clamp(15.3px, 1.93cqw, 24.0px); line-height: 1.6;
+    max-width: calc(100cqw - 32px); overflow-x: auto;
+  }
+  .blue { color: #1840d8; }
+  .idbig.solo { background: #000; z-index: 38; }
+  .restart {
+    position: absolute; inset: 0; z-index: 39;
+    display: grid; place-content: center; justify-items: center; gap: 34px;
+    background: #f6f6f2;
+    font-family: var(--mono); font-weight: 700;
+  }
+  .restart__q { margin: 0; color: #111; font-size: clamp(17.4px, 2.31cqw, 28.3px); letter-spacing: .03em; }
+  .restart__opts { display: flex; gap: clamp(24px, 6cqw, 72px); }
+  .opt {
+    border: 0; background: none; padding: 6px 14px; cursor: pointer;
+    font: inherit; font-size: clamp(16.4px, 1.93cqw, 24.0px); color: #111;
+  }
+  .opt:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .opt:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
+  .opt.pressed { background: #111; color: #f6f6f2; transform: translateY(2px); }
+  /* 빨강·검정·파랑 뒤죽박죽 */
+  .chaos { position: absolute; inset: 0; z-index: 40; overflow: hidden; pointer-events: none; }
+  .chaos i { position: absolute; display: block; }
+  /* 무지개 환영 화면 */
+  .welcome {
+    position: absolute; inset: 0; z-index: 41;
+    display: grid; place-content: center; justify-items: center; gap: 18px; text-align: center;
+    background: linear-gradient(115deg, #ff5f6d, #ffb347, #fff275, #7ee081, #5ec8f2, #8b7cf6, #f27ad6);
+    cursor: pointer;
+  }
+  @keyframes rainbow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+  .welcome__big { margin: 0; font-family: "Jua", var(--mono); font-size: clamp(48.0px, 8.67cqw, 130.8px); color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.22), 0 2px 14px rgba(0,0,0,.25); }
+  .welcome__small { margin: 0; font-family: "Jua", var(--mono); font-size: clamp(17.4px, 2.31cqw, 30.5px); color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.25), 0 1px 8px rgba(0,0,0,.3); }
+  .welcome__org {
+    margin: 0; display: grid; gap: .25em; justify-items: center; white-space: nowrap;
+    font-family: "Jua", var(--mono); font-size: 10cqw; line-height: 1.2;
+    color: #141418; text-shadow: 0 0 18px rgba(255,255,255,.65), 0 2px 0 rgba(255,255,255,.4);
+  }
+  .welcome__org span { opacity: 0; }
+  .welcome__org .welcome__tail { font-size: .46em; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.45), 0 0 10px rgba(0,0,0,.25); margin-top: .2em; }
+  .welcome__org span.slam { animation: riseIn .9s cubic-bezier(.2,.8,.25,1) both; }
+  @keyframes riseIn { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+  @keyframes slam {
+    0% { opacity: 0; transform: scale(2.4); }
+    60% { opacity: 1; transform: scale(.94); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .welcome__org.shake { animation: shake .18s linear; }
+  @keyframes shake { 25% { transform: translate(-6px, 3px); } 50% { transform: translate(5px, -3px); } 75% { transform: translate(-3px, 2px); } }
+  /* 마지막 카드 */
+  .final { position: absolute; inset: 0; z-index: 42; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: #fbfbf8; }
+  .final__status { margin: 0; font-family: var(--title); font-weight: 400; font-size: 16.4px; color: #111; letter-spacing: .04em; min-height: 1.4em; }
+  .final__status.done { visibility: hidden; }
+  .final__status.complete { font-weight: 800; animation: popin .35s cubic-bezier(.2,.9,.3,1.3) both; }
+  .final__inner.rolling .final__code, .final__inner.rolling .final__row { filter: blur(.4px); opacity: .85; }
+  .final { transform-origin: center; }
+  .final.off { animation: crtOff .55s cubic-bezier(.6,0,.9,.4) forwards; }
+  @keyframes crtOff {
+    0% { transform: scale(1, 1); filter: brightness(1); }
+    55% { transform: scale(1, .006); filter: brightness(3); }
+    80% { transform: scale(.2, .004); filter: brightness(4); opacity: 1; }
+    100% { transform: scale(0, 0); opacity: 0; }
+  }
+  .final__outer { background: #d11a1a; padding: clamp(12px, 2.4cqh, 22px); }
+  .final__inner {
+    border: 1.5px solid #111; padding: clamp(22px, 5cqh, 44px) clamp(36px, 7cqw, 80px);
+    display: grid; gap: 14px; justify-items: center; text-align: center;
+    font-family: var(--title); color: #111;
+  }
+  .final__code { margin: 0; font-weight: 800; font-size: clamp(43.6px, 7.7cqw, 104.6px); letter-spacing: .06em; line-height: 1; }
+  .final__row { margin: 0; font-weight: 400; font-size: clamp(16.4px, 1.93cqw, 24.0px); }
+  .dim { position: absolute; inset: 0; z-index: 33; background: #000; opacity: 0; pointer-events: none; transition: opacity .55s ease-in-out; }
+  .late { opacity: 0; transition: opacity 2s ease; }
+  .late.on { opacity: 1; }
+
+  /* 눌러도 되는 순간에만 뜨는 작은 표시 */
+  .hint {
+    position: absolute; z-index: 60; left: 50%; transform: translateX(-50%);
+    bottom: 3.6%;
+    font-family: var(--mono); font-size: 14.2px; color: #fff; mix-blend-mode: difference;
+    pointer-events: none; opacity: 0; transition: opacity .4s;
+  }
+  .hint.show { opacity: .7; animation: hintBlink 1.1s steps(1) infinite; }
+  @keyframes hintBlink { 50% { opacity: .15; } }
+  /* 장면이 바뀔 때 화면 맨 위를 스치는 지직거림 */
+  .cutfx { position: absolute; inset: 0; z-index: 43; pointer-events: none; overflow: hidden; }
+  .cutfx i { position: absolute; left: 0; right: 0; display: block; mix-blend-mode: difference; }
+
+  .replay {
+    position: absolute; z-index: 61;
+    right: 4%; bottom: 2.6%;
+    background: none; border: 0; padding: 6px 8px;
+    font-family: var(--mono); font-size: 19.6px; color: var(--signal);
+    opacity: 0; transition: opacity .6s; cursor: pointer;
+    mix-blend-mode: difference;
+  }
+  .replay.show { opacity: 1; }
+  .replay { display: none !important; }
+  .replay:hover, .replay:focus-visible { outline: 1px solid var(--signal); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gate__cmd::after, .card::after { animation: none; }
+    .slash.cut { transition-duration: 400ms; }
+    .err.in { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <i class="phone__btn vol"></i><i class="phone__btn pwr"></i>
+  <div class="phone__glass"><div class="phone__screen">
+<div class="stage" id="stage">
+  <canvas class="noise" id="noise" width="320" height="180"></canvas>
+  <div class="tears" id="tears"></div>
+  <div class="title-wrap" id="titleWrap">
+    <h1 class="title" id="title">[종말 예언: 어둠 탐사 기록]<span class="slash" id="slash"></span></h1>
+  </div>
+  <div class="wheel" id="wheel" aria-hidden="true"></div>
+  <div class="blackout" id="blackout"></div>
+  <div class="tray" id="tray"><button class="card" id="card" type="button" aria-label="카드" hidden></button></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+  <div class="errs" id="errs"></div>
+  <div class="scrawl" id="scrawl" aria-live="off"></div>
+  <p class="lie" id="lie" hidden>거짓말쟁이</p>
+  <div class="flash" id="flash"></div>
+  <div class="bright" id="bright" hidden>
+    <i class="mcursor" aria-hidden="true"></i>
+    <button class="choice" id="choice" type="button" hidden>꿈인가?</button>
+  </div>
+  <div class="appscreen" id="appscreen" hidden>
+    <button class="appicon" id="appicon" type="button" aria-label="앱 열기">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M0 0 L100 100 M100 0 L0 100" stroke="#f2c400" stroke-width="13" stroke-linecap="square"/></svg>
+    </button>
+    <p class="toast" id="toast" hidden>오류가 발생했습니다.
+재접속합니다.</p>
+  </div>
+  <button class="xscreen" id="xscreen" type="button" aria-label="누르기" hidden>
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M4 4 L96 96 M96 4 L4 96" stroke="#f2c400" stroke-width="14" stroke-linecap="square" vector-effect="non-scaling-stroke"/></svg>
+  </button>
+  <div class="conn" id="conn" hidden>
+    <div class="conn__box" id="connBox">
+      <p class="conn__label" id="connLabel">접속 중</p>
+      <div class="conn__bar"><i id="connFill"></i></div>
+    </div>
+    <p class="conn__end" id="connEnd">---
+
+<span class="late" id="late1">집으로 돌아가신 후</span>
+
+종말이 왔습니다.
+
+정말 감사합니다
+
+<span class="late" id="late2">이름님.</span>
+
+---</p>
+    <button class="choice choice--low" id="eoh" type="button" hidden>어?</button>
+  </div>
+  <div class="vend" id="vend" hidden>
+    <svg class="vend__svg" viewBox="0 0 200 340" aria-hidden="true">
+      <defs>
+        <linearGradient id="vGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b2228"/><stop offset=".5" stop-color="#0d1114"/><stop offset="1" stop-color="#151b20"/></linearGradient>
+        <linearGradient id="vBody" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#16171a"/><stop offset=".5" stop-color="#202226"/><stop offset="1" stop-color="#121315"/></linearGradient>
+        <linearGradient id="vSilver" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c8086"/><stop offset=".3" stop-color="#c1c5ca"/><stop offset=".55" stop-color="#8a8e94"/><stop offset=".8" stop-color="#c3c7cc"/><stop offset="1" stop-color="#73777d"/></linearGradient>
+        <clipPath id="vGlassClip"><rect x="16" y="34" width="118" height="214" rx="2"/></clipPath>
+        <clipPath id="vBinClip"><rect x="24" y="270" width="102" height="36" rx="3"/></clipPath>
+      </defs>
+      <rect x="4" y="6" width="192" height="318" rx="6" fill="url(#vBody)" stroke="#2b2d31" stroke-width="1.2"/>
+      <rect x="10" y="12" width="180" height="16" rx="2" fill="#1b1c20" stroke="#2b2d31" stroke-width=".6"/>
+      <rect x="16" y="34" width="118" height="214" rx="2" fill="url(#vGlass)" stroke="#30343a" stroke-width="1"/>
+      <g id="vShelves" clip-path="url(#vGlassClip)"></g>
+      <g clip-path="url(#vGlassClip)"><g id="vCard" opacity="0"><rect x="-7" y="-11" width="14" height="22" rx="1.4" fill="url(#vSilver)"/><rect x="-2.5" y="-9.4" width="5" height="1" rx=".5" fill="#1b1c1e"/><rect x="-4" y="0" width="8" height=".5" fill="#fff"/><rect x="-2.8" y="1.6" width="5.6" height=".5" fill="#fff"/></g></g>
+      <path d="M22 40 L60 40 L26 120 Z" fill="#ffffff" opacity=".025"/>
+      <rect x="140" y="34" width="48" height="214" rx="2" fill="#18191c" stroke="#2b2d31" stroke-width=".6"/>
+      <rect x="146" y="42" width="36" height="12" rx="1" fill="#0f1a14" stroke="#26302a" stroke-width=".5"/>
+      <g id="vButtons"></g>
+      <rect x="158" y="170" width="12" height="3" rx="1" fill="#060606"/>
+      <rect x="150" y="196" width="28" height="40" rx="2" fill="#141518" stroke="#2b2d31" stroke-width=".5"/>
+      <rect x="20" y="262" width="110" height="48" rx="4" fill="#111214" stroke="#2b2d31" stroke-width=".8"/>
+      <rect x="24" y="270" width="102" height="36" rx="3" fill="#040404"/>
+      <g clip-path="url(#vBinClip)"><g id="vCardBin" opacity="0" transform="translate(75 296) rotate(78)"><rect x="-7" y="-11" width="14" height="22" rx="1.4" fill="url(#vSilver)"/><rect x="-2.5" y="-9.4" width="5" height="1" rx=".5" fill="#1b1c1e"/><rect x="-4" y="0" width="8" height=".5" fill="#fff"/><rect x="-2.8" y="1.6" width="5.6" height=".5" fill="#fff"/></g></g>
+      <rect id="vFlap" x="24" y="270" width="102" height="10" rx="2" fill="#1d1e22" stroke="#2b2d31" stroke-width=".5"/>
+      <rect x="14" y="324" width="20" height="8" fill="#0e0e10"/><rect x="166" y="324" width="20" height="8" fill="#0e0e10"/>
+    </svg>
+  </div>
+  <div class="idbig" id="idbig" hidden>
+   <div class="idbig__rig" id="idbigRig">
+    <div class="idbig__card" id="idbigCard">
+      <div class="idbig__hole"></div>
+      <div class="idbig__head"><div class="idbig__emblem"><i></i></div><span class="idt idt1">[초■연 재■관리국]</span></div>
+      <i class="idrule"></i>
+      <p class="idbig__text"><span class="idt idt2">■■■요원</span><span class="idt idt3">신규조■반</span></p>
+      <dl class="idbig__fields"><div><dt>소속</dt><dd>■■■■■</dd></div><div><dt>등급</dt><dd>■■</dd></div><div><dt>발급</dt><dd>■■■■.■■.■■</dd></div></dl>
+      <div class="idbig__foot"><span class="idbig__no">No. ■■■-■■■■</span><i class="idbig__holo" aria-hidden="true"></i></div>
+    </div>
+   </div>
+  </div>
+  <div class="note" id="note" hidden>
+    <p class="note__text" id="noteText">[어둠탐사기록 <span class="note__strike">캐릭터</span> 메이커]
+
+<span class="note__red">소중하게 간직한다면서 이
+
+거짓말쟁이야 너 신분증 어딨어</span></p>
+  </div>
+  <div class="rain" id="rain" hidden></div>
+  <div class="wbox" id="wbox" hidden><p class="wbox__text" id="wboxText"></p></div>
+  <div class="restart" id="restart" hidden>
+    <p class="restart__q">다시 시작하시겠습니까?</p>
+    <div class="restart__opts" id="opts" hidden>
+      <button class="opt" type="button">▶ yes</button>
+      <button class="opt" type="button">▶ 예</button>
+    </div>
+  </div>
+  <div class="chaos" id="chaos" hidden></div>
+  <div class="welcome" id="welcome" hidden>
+    <p class="welcome__big" id="wBig">환영합니다!</p>
+    <p class="welcome__small" id="wSmall">급할 때는 드림 머니! 드림 라이프!</p>
+    <p class="welcome__org" id="wOrg" hidden><span>백일몽 주식회사</span><span>남해지사</span><span class="welcome__tail">에 오신 것을 진심으로 환영합니다!</span></p>
+  </div>
+  <div class="final" id="final" hidden>
+    <p class="final__status" id="finalStatus">배정 중입니다<span id="finalDots">...</span></p>
+    <div class="final__outer"><div class="final__inner">
+      <p class="final__code" id="fCode">Z999</p>
+      <p class="final__row" id="fClass">분류: 작업자</p>
+      <p class="final__row" id="fDays">남은 기한: 84일</p>
+    </div></div>
+  </div>
+  <div class="dim" id="dim"></div>
+  <div class="cutfx" id="cutfx"></div>
+</div>
+
+<button class="gate" id="gate" type="button" aria-label="휴대폰 켜기">
+  <span class="gate__note">소리가 재생됩니다</span>
+</button>
+<div class="lock" id="lock" hidden>
+  <div class="lock__clock"><p class="lock__time" id="lockTime">20:19</p><p class="lock__date" id="lockDate">10월 21일 수요일</p></div>
+  <button class="lock__stack" id="lockStack" type="button" aria-label="어둠탐사기록 알림, 열기">
+    <span class="noti noti--3"></span>
+    <span class="noti noti--2"></span>
+    <span class="noti noti--1">
+      <span class="noti__head"><i class="noti__icon"></i><span class="noti__app">어둠탐사기록</span><span class="noti__when">지금</span></span>
+      <span class="noti__title">확인하지 않은 기록이 있습니다</span>
+    </span>
+  </button>
+  <p class="lock__hint" id="lockHint">위로 밀어서 잠금 해제</p>
+</div>
+<div class="home" id="home" hidden>
+  <div class="home__item" id="homeItem">
+    <button class="home__app" id="homeApp" type="button" aria-label="어둠탐사기록 열기">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M0 0 L100 100 M100 0 L0 100" stroke="#f2c400" stroke-width="13" stroke-linecap="square"/></svg>
+    </button>
+    <span class="home__label" id="homeLabel">어둠탐사기록</span>
+  </div>
+  <i class="home__tint" id="homeTint"></i>
+  <div class="hbanner" id="hbanner" aria-live="polite">
+    <span class="noti__head"><i class="noti__icon"></i><span class="noti__app">어둠탐사기록</span><span class="noti__when">지금</span></span>
+    <span class="hbanner__text" id="hbannerText">열람을 권장합니다</span>
+  </div>
+</div>
+<div class="launch" id="launch" hidden><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L100 100 M100 0 L0 100" stroke="#f2c400" stroke-width="13" stroke-linecap="square" vector-effect="non-scaling-stroke"/></svg></div>
+
+<div class="hint" id="hint" aria-hidden="true">▼</div>
+
+<button class="replay" id="replay" type="button" aria-label="다시 보기">↻</button>
+    <div class="sbar" aria-hidden="true"><span id="sbTime">9:41</span><span class="sbar__r"><span id="sbNet">5G</span><i class="sbar__bat"></i></span></div>
+    <i class="phone__cam" aria-hidden="true"></i>
+    <i class="navpill" aria-hidden="true"></i>
+  </div></div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), gate = $('gate'), canvas = $('noise'), ctx = canvas.getContext('2d');
+  const tears = $('tears'), titleWrap = $('titleWrap'), title = $('title'), slash = $('slash');
+  const blackout = $('blackout'), replay = $('replay'), wheel = $('wheel');
+  const card = $('card'), errs = $('errs'), tray = $('tray');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const DELAY = 5000;
+  let timers = [], idleTimer = null, raf = null, noiseLevel = 0, redMode = false, redRamp = null;
+  const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  /* ---------- 룰렛 판 ---------- */
+  const SEG = 24, STEP = 360 / SEG;
+  const GREEN = [3, 12, 20]; // 형광초록 칸 위치 (일부러 불규칙하게)
+  (function buildWheel() {
+    const ns = 'http://www.w3.org/2000/svg', C = 100, R1 = 68, R2 = 90;
+    const pt = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return [+(C + r * Math.cos(a)).toFixed(2), +(C + r * Math.sin(a)).toFixed(2)]; };
+    let g = '';
+    for (let i = 0; i < 8; i++) {
+      const d0 = i * 45 + 22.5, d1 = d0 + 45;
+      const [ax, ay] = pt(58, d0), [bx, by] = pt(58, d1);
+      g += `<path d="M${C} ${C}L${ax} ${ay}A58 58 0 0 1 ${bx} ${by}Z" fill="${i % 2 ? '#0b0b0b' : '#151513'}"/>`;
+      const [sx, sy] = pt(15, d0), [ex, ey] = pt(58, d0);
+      g += `<line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="#f2f2ee" stroke-width=".35"/>`;
+      const [mx, my] = pt(63, i * 45);
+      g += `<rect x="${mx - 1.6}" y="${my - 1.6}" width="3.2" height="3.2" fill="none" stroke="#f2f2ee" stroke-width=".4" transform="rotate(${i * 45 + 45} ${mx} ${my})"/>`;
+    }
+    for (let i = 0; i < SEG; i++) {
+      const d0 = i * STEP - STEP / 2, d1 = d0 + STEP;
+      const [ax, ay] = pt(R2, d0), [bx, by] = pt(R2, d1), [cx, cy] = pt(R1, d1), [dx, dy] = pt(R1, d0);
+      const fill = GREEN.includes(i) ? '#39ff6a' : (i % 2 ? '#0e0e0e' : '#22221f');
+      g += `<path d="M${ax} ${ay}A${R2} ${R2} 0 0 1 ${bx} ${by}L${cx} ${cy}A${R1} ${R1} 0 0 0 ${dx} ${dy}Z" fill="${fill}" stroke="#f2f2ee" stroke-width=".5" data-seg="${i}"/>`;
+    }
+    g += `<circle cx="${C}" cy="${C}" r="58" fill="none" stroke="#f2f2ee" stroke-width=".4"/>`;
+    g += `<circle cx="${C}" cy="${C}" r="15" fill="#0a0a0a" stroke="#f2f2ee" stroke-width=".6"/>`;
+    g += `<path d="M${C - 11} ${C}H${C + 11}M${C} ${C - 11}V${C + 11}" stroke="#f2f2ee" stroke-width=".8"/>`;
+    g += `<circle cx="${C}" cy="${C}" r="3" fill="#0a0a0a" stroke="#f2f2ee" stroke-width=".6"/>`;
+    wheel.innerHTML = `<svg viewBox="0 0 200 200" xmlns="${ns}">
+      <circle cx="100" cy="100" r="97" fill="#0a0a0a" stroke="#f2f2ee" stroke-width="1.1"/>
+      <circle cx="100" cy="100" r="92.5" fill="none" stroke="#f2f2ee" stroke-width=".4"/>
+      <g id="wheelRot">${g}</g>
+      <path d="M100 14 L94 0 L106 0 Z" fill="#f2f2ee"/>
+    </svg>`;
+  })();
+  const wheelRot = document.getElementById('wheelRot');
+
+  // 회전: 처음엔 일정한 속도로 계속 돌다가, 마지막 회전에서만 틱 소리에 맞춰 느려지며 멈춘다
+  const SPIN_V = 780; // 도/초
+  let spinPlan = null, wheelRaf = null;
+  function wheelAngle(now) {
+    const p = spinPlan; if (!p) return 0;
+    if (now < p.t0) return p.off;
+    if (now < p.t3) return p.off + SPIN_V * (now - p.t0);
+    const tk = p.ticks;
+    let i = tk.length - 1;
+    while (i > 0 && tk[i].t > now) i--;
+    let a = p.off + tk[i].a;
+    const n = tk[i + 1];
+    if (n) a += (n.a - tk[i].a) * (now - tk[i].t) / (n.t - tk[i].t);
+    return a;
+  }
+  function wheelLoop() {
+    if (ac) wheelRot.setAttribute('transform', `rotate(${wheelAngle(ac.currentTime).toFixed(2)} 100 100)`);
+    wheelRaf = requestAnimationFrame(wheelLoop);
+  }
+
+  /* ---------- 소리 ---------- */
+  let droneGain = null;
+  const setDrone = (v, sec = 1.5) => { if (!ac || !droneGain) return; const t = ac.currentTime; droneGain.gain.cancelScheduledValues(t); droneGain.gain.setTargetAtTime(v, t, sec / 3); };
+  let ac, master, noiseGain, beepGain, beepOsc, tinGain, tinOsc, clickBuf, clickBus = null, errBus = null;
+  function initAudio() {
+    if (ac) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ac = new AC();
+    master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+
+    // 어두운 장면 밑에 깔리는 낮은 웅웅거림
+    droneGain = ac.createGain(); droneGain.gain.value = 0;
+    const dlp = ac.createBiquadFilter(); dlp.type = 'lowpass'; dlp.frequency.value = 220;
+    droneGain.connect(master);
+    [[49, 'triangle'], [49.7, 'triangle'], [98.3, 'sine']].forEach(([f, ty]) => {
+      const o = ac.createOscillator(); o.type = ty; o.frequency.value = f;
+      o.connect(dlp); o.start();
+    });
+    dlp.connect(droneGain);
+
+    const len = ac.sampleRate * 2, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource(); src.buffer = buf; src.loop = true;
+    const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+    const bp = ac.createBiquadFilter(); bp.type = 'peaking'; bp.frequency.value = 3200; bp.gain.value = 6;
+    noiseGain = ac.createGain(); noiseGain.gain.value = 0;
+    src.connect(hp).connect(bp).connect(noiseGain).connect(master); src.start();
+
+    beepGain = ac.createGain(); beepGain.gain.value = 0; beepGain.connect(master);
+    beepOsc = ac.createOscillator(); beepOsc.type = 'sine'; beepOsc.frequency.value = 1000;
+    beepOsc.connect(beepGain); beepOsc.start();
+
+    // 이명: 끊김 없는 단일 고음. 아주 느리게 흔들리며 점점 올라간다
+    tinGain = ac.createGain(); tinGain.gain.value = 0; tinGain.connect(master);
+    tinOsc = ac.createOscillator(); tinOsc.type = 'sine'; tinOsc.frequency.value = 3900;
+    const lfo = ac.createOscillator(); lfo.frequency.value = 0.35;
+    const lfoDepth = ac.createGain(); lfoDepth.gain.value = 12;
+    lfo.connect(lfoDepth).connect(tinOsc.frequency); lfo.start();
+    tinOsc.connect(tinGain); tinOsc.start();
+
+    // 룰렛 톱니 한 칸이 넘어갈 때의 틱 소리
+    const cl = Math.floor(ac.sampleRate * 0.03);
+    clickBuf = ac.createBuffer(1, cl, ac.sampleRate);
+    const cd = clickBuf.getChannelData(0);
+    for (let i = 0; i < cl; i++) cd[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ac.sampleRate * 0.004));
+  }
+
+  function tick(when, vol, pitch, bus = clickBus) {
+    if (!bus) return;
+    const s = ac.createBufferSource(); s.buffer = clickBuf; s.playbackRate.value = pitch;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2200 * pitch; bp.Q.value = 2.5;
+    const g = ac.createGain(); g.gain.value = vol;
+    s.connect(bp).connect(g).connect(bus); s.start(when);
+  }
+  // 드르르르륵: 빠르게 시작해 점점 느려진다. 틱 시각을 돌려준다
+  function spinSound(startAt, dur) {
+    const times = [];
+    let t = 0;
+    while (t < dur) {
+      const p = t / dur;
+      tick(startAt + t, 0.5 - p * 0.15, rand(0.9, 1.1));
+      times.push(startAt + t);
+      t += 0.018 + Math.pow(p, 2.2) * 0.17;
+    }
+    return times;
+  }
+  function roulette(gap = 0.55, dur = 3.2) {
+    if (!ac) return;
+    clickBus = ac.createGain(); clickBus.gain.value = 1; clickBus.connect(master);
+    setDrone(0.09, 4);
+    const t0 = ac.currentTime + 0.25;
+    const s1 = spinSound(t0, dur);
+    const t2 = s1[s1.length - 1] + gap;
+    const s2 = spinSound(t2, dur);
+    const t3 = s2[s2.length - 1] + gap;
+    const s3 = spinSound(t3, dur);
+
+    // 마지막 회전: 틱마다 한 칸씩, 끝에 한 번 "틱." 하고 멈춘다
+    const base = SPIN_V * (t3 - t0);
+    const ticks = s3.map((t, i) => ({ t, a: base + i * STEP }));
+    const stopAt = s3[s3.length - 1] + 0.16;
+    ticks.push({ t: stopAt, a: ticks[ticks.length - 1].a + STEP });
+    tick(stopAt, 1.2, 1.6); tick(stopAt + 0.003, 0.5, 2.4);
+    // 마지막에 바늘이 형광초록 칸(3번)에 걸리도록 처음 위치를 맞춘다
+    const LAND = 3, finalA = ticks[ticks.length - 1].a;
+    const off = (((-LAND * STEP - finalA) % 360) + 360) % 360;
+    spinPlan = { t0, t3, ticks, off };
+
+    wheel.classList.add('on');
+    if (!wheelRaf) wheelRaf = requestAnimationFrame(wheelLoop);
+    later((stopAt - ac.currentTime) * 1000 + 120, () => {
+      // 걸린 칸이 번쩍인다
+      const seg = wheel.querySelector('[data-seg="3"]');
+      wheel.classList.add('lit');
+      [0, 1, 0, 1, 0, 1].forEach((v, k) => later(k * 120, () => { seg.setAttribute('fill', v ? '#eaffef' : '#39ff6a'); if (v) softTone(1320, 0.05, 0.12); }));
+      later(760, () => { seg.setAttribute('fill', '#39ff6a'); awaitStorm = true; });
+    });
+
+    // 뒷배경: 서서히 번지는 옅은 빨간 노이즈 + 수시로 튀는 지직거림
+    redMode = true;
+    const t0ms = performance.now();
+    clearInterval(redRamp);
+    redRamp = setInterval(() => {
+      const p = Math.min(1, (performance.now() - t0ms) / 4500);
+      const b = 0.2 * p;
+      if (p > 0.3 && Math.random() < 0.22) {
+        setVisualNoise(b + rand(0.12, 0.4));
+        spawnTears(rand(1, 5) | 0);
+        crackle(rand(30, 110), rand(0.05, 0.16));
+        setTimeout(() => { tears.innerHTML = ''; }, rand(50, 130));
+      } else {
+        setVisualNoise(b * rand(0.6, 1.25));
+      }
+    }, 70);
+  }
+  function swellTinnitus(seconds, peak) {
+    if (!ac) return; const t = ac.currentTime, g = tinGain.gain, f = tinOsc.frequency;
+    g.cancelScheduledValues(t); g.setValueAtTime(0.0001, t);
+    g.exponentialRampToValueAtTime(peak, t + seconds);
+    f.cancelScheduledValues(t); f.setValueAtTime(3900, t);
+    f.linearRampToValueAtTime(4300, t + seconds);
+  }
+  const setTin = (v, ramp = 0.01) => {
+    if (!ac) return; const t = ac.currentTime;
+    tinGain.gain.cancelScheduledValues(t); tinGain.gain.setTargetAtTime(v, t, ramp);
+  };
+  const setNoise = (v, ramp = 0.01) => {
+    if (!ac) return; const t = ac.currentTime;
+    noiseGain.gain.cancelScheduledValues(t); noiseGain.gain.setTargetAtTime(v, t, ramp);
+  };
+  const setBeep = (v, ramp = 0.01) => {
+    if (!ac) return; const t = ac.currentTime;
+    beepGain.gain.cancelScheduledValues(t); beepGain.gain.setTargetAtTime(v, t, ramp);
+  };
+  function crackle(ms, vol) {
+    setNoise(vol, 0.004);
+    setTimeout(() => setNoise(0, 0.02), ms);
+  }
+  // 툭: 카드가 바닥에 떨어지는 둔탁한 소리
+  function thud() {
+    if (!ac) return;
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.12);
+    g.gain.setValueAtTime(0.55, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o.connect(g).connect(master); o.start(t); o.stop(t + 0.2);
+    const b = ac.createGain(); b.connect(master);
+    tick(t, 0.5, 0.45, b);
+  }
+  // 뱉어낼 때의 짧은 기계음
+  function thudSoft() {
+    if (!ac) return;
+    const b = ac.createGain(); b.connect(master);
+    tick(ac.currentTime, 0.6, 0.6, b); tick(ac.currentTime + 0.025, 0.35, 0.8, b);
+  }
+  // 오류음: 짧은 두 음짜리 경고음
+  // 오류음: 윈도우 오류창이 뜰 때의 "띠링" 같은 하강 2음 차임. 겹쳐도 된다
+  function errSound() {
+    if (!ac || !errBus) return;
+    const t = ac.currentTime, det = rand(0.985, 1.015);
+    [[1318.5, 0, 0.18], [1760, 0.07, 0.32]].forEach(([f, dt, dur]) => {
+      [[1, 0.13], [2.01, 0.035], [3.02, 0.012]].forEach(([mul, v]) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine'; o.frequency.value = f * mul * det;
+        g.gain.setValueAtTime(0.0001, t + dt);
+        g.gain.exponentialRampToValueAtTime(v, t + dt + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dt + dur);
+        o.connect(g).connect(errBus); o.start(t + dt); o.stop(t + dt + dur + 0.02);
+      });
+    });
+  }
+
+  /* ---------- 화면 노이즈 ---------- */
+  const img = ctx.createImageData(canvas.width, canvas.height);
+  function drawNoise() {
+    const p = img.data;
+    for (let i = 0; i < p.length; i += 4) {
+      const v = Math.random() * 255 | 0;
+      if (redMode) { p[i] = v; p[i + 1] = p[i + 2] = v * 0.08 | 0; }
+      else p[i] = p[i + 1] = p[i + 2] = v;
+      p[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    canvas.style.opacity = noiseLevel;
+    raf = noiseLevel > 0 ? requestAnimationFrame(drawNoise) : null;
+  }
+  function setVisualNoise(v) {
+    noiseLevel = reduced ? Math.min(v, 0.15) : v;
+    canvas.style.opacity = noiseLevel;
+    if (noiseLevel > 0 && !raf) raf = requestAnimationFrame(drawNoise);
+  }
+  function spawnTears(n) {
+    if (reduced) return;
+    tears.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const t = document.createElement('div'); t.className = redMode ? 'tear red' : 'tear';
+      t.style.top = rand(0, 100) + '%';
+      t.style.height = rand(1, 14) + 'px';
+      t.style.opacity = rand(0.15, 0.6);
+      t.style.transform = `translateX(${rand(-30, 30)}px)`;
+      tears.appendChild(t);
+    }
+  }
+
+  /* ---------- 회색 카드: 룰렛 밑에서 툭 뱉어진다 ---------- */
+  let cardRaf = null;
+  function dropCard() {
+    const sr = stage.getBoundingClientRect(), wr = wheel.querySelector('svg').getBoundingClientRect();
+    const slotY = wr.bottom - sr.top - wr.height * 0.015;
+    tray.style.top = slotY + 'px';
+    card.hidden = false;
+    const ch = card.offsetHeight, room = sr.height - slotY;
+    const floor = Math.max(ch * 0.2, room - ch - Math.max(14, room * 0.18));
+    let y = -ch, x = 0, vy = 520, vx = rand(-90, 90), rot = 0, vr = rand(-260, 260);
+    let last = performance.now(), hits = 0;
+    thudSoft();
+    (function fly(ts) {
+      ts = ts || performance.now();
+      const dt = Math.min(0.033, (ts - last) / 1000); last = ts;
+      vy += 2600 * dt; y += vy * dt; x += vx * dt; rot += vr * dt;
+      if (y >= floor && vy > 0) {
+        y = floor; hits++;
+        if (hits === 1) thud();
+        vy = hits === 1 ? -vy * 0.22 : 0; vx *= 0.4; vr *= 0.3;
+      }
+      card.style.transform = `translate(calc(-50% + ${x.toFixed(1)}px), ${y.toFixed(1)}px) rotate(${rot.toFixed(1)}deg)`;
+      cardRaf = (hits >= 2) ? null : requestAnimationFrame(fly);
+    })();
+  }
+
+  /* ---------- 오류창 폭주 ---------- */
+  let errTimer = null, errCount = 0;
+  const ERR_MAX = 180;
+  const ERR_MSGS = ['잘못된 접근입니다.', '액세스 권한이 없습니다.'];
+  let stormStart = 0;
+  // 갈수록 문장이 망가진다: 단어가 섞이고, 글자가 뒤바뀌고, 반복되고, 깨진다
+  const WORDS = ['잘못된', '접근', '액세스', '권한이', '없습니다', '입니다'];
+  const JUNK = ['▒', '▓', '?', '_', '■', '·'];
+  function corrupt(msg, p) {
+    if (Math.random() > p * 1.1) return msg;
+    let s = msg;
+    const passes = 1 + (p * 4 | 0);
+    for (let k = 0; k < passes; k++) {
+      const r = Math.random(), ch = [...s];
+      if (r < 0.22) {
+        const w = s.split(' '); w[Math.random() * w.length | 0] = WORDS[Math.random() * WORDS.length | 0]; s = w.join(' ');
+      } else if (r < 0.42) {
+        const i = Math.random() * ch.length | 0; ch.splice(i, 0, ...Array(2 + (Math.random() * 3 | 0)).fill(ch[i])); s = ch.join('');
+      } else if (r < 0.6) {
+        const i = Math.random() * (ch.length - 1) | 0; [ch[i], ch[i + 1]] = [ch[i + 1], ch[i]]; s = ch.join('');
+      } else if (r < 0.8) {
+        const i = Math.random() * ch.length | 0; ch[i] = JUNK[Math.random() * JUNK.length | 0]; s = ch.join('');
+      } else {
+        const i = Math.random() * ch.length | 0; ch.splice(i, 1); s = ch.join('');
+      }
+    }
+    return [...s].slice(0, 16).join('');
+  }
+  const WARN_SVG = '<svg class="err__icon" viewBox="0 0 40 36" shape-rendering="crispEdges" aria-hidden="true"><path d="M20 2 L38 34 H2 Z" fill="#f2c200" stroke="#3a2a00" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 4.5 L35.5 32.4 H4.5 Z" fill="none" stroke="#ffe680" stroke-width="1"/><rect x="18" y="11" width="4" height="13" fill="#000"/><rect x="18" y="27" width="4" height="4" fill="#000"/></svg>';
+  // 진짜 옛날 화면처럼: 글자를 작은 캔버스에 그린 뒤 안티앨리어싱을 없애 도트 글씨로 만든다
+  const bitmapCache = {};
+  function bitmapText(text, px, weight, color) {
+    const key = [text, px, weight, color].join('|');
+    if (bitmapCache[key]) return bitmapCache[key];
+    const c = document.createElement('canvas'), x = c.getContext('2d');
+    const font = `${weight} ${px}px "Nanum Gothic", "굴림", Gulim, sans-serif`;
+    x.font = font;
+    const w = Math.ceil(x.measureText(text).width) + 2, h = Math.ceil(px * 1.35);
+    c.width = w; c.height = h;
+    x.font = font; x.textBaseline = 'middle'; x.fillStyle = color;
+    x.fillText(text, 1, h / 2 + 0.5);
+    const d = x.getImageData(0, 0, w, h), a = d.data;
+    for (let i = 3; i < a.length; i += 4) a[i] = a[i] > 72 ? 255 : 0;
+    x.putImageData(d, 0, 0);
+    return (bitmapCache[key] = `<img src="${c.toDataURL()}" width="${w}" height="${h}" alt="${text}">`);
+  }
+  function prepBitmaps() {
+    const go = () => {
+      ERR_MSGS.forEach(m => bitmapText(m, 12, 400, '#000'));
+      bitmapText('오류', 12, 700, '#fff'); bitmapText('확인', 12, 400, '#000');
+    };
+    if (document.fonts && document.fonts.load) {
+      Promise.all([document.fonts.load('400 12px "Nanum Gothic"'), document.fonts.load('700 12px "Nanum Gothic"')]).then(go, go);
+    } else go();
+  }
+
+  function spawnErr() {
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const el = document.createElement('div');
+    el.className = 'err in';
+    const p = Math.min(1, (performance.now() - stormStart) / STORM_MS);
+    const msg = corrupt(ERR_MSGS[Math.random() * ERR_MSGS.length | 0], p);
+    const title = p > 0.6 && Math.random() < p * 0.5 ? corrupt('어둠탐사기록', p) : '어둠탐사기록';
+    el.innerHTML = `<p class="err__title"><i></i></p><p class="err__msg"></p><div class="err__btns"><span>앱 정보</span><span>닫기</span></div>`;
+    el.querySelector('.err__title').append(title);
+    el.querySelector('.err__msg').textContent = msg;
+    errs.appendChild(el);
+    const w = el.offsetWidth, h = el.offsetHeight;
+    el.style.left = rand(-w * 0.3, W - w * 0.7) + 'px';
+    el.style.top = rand(-h * 0.3, H - h * 0.7) + 'px';
+    el.addEventListener('animationend', () => el.classList.remove('in'), { once: true });
+    errSound();
+    if (Math.random() < 0.25) { spawnTears(rand(1, 3) | 0); setTimeout(() => { tears.innerHTML = ''; }, 80); }
+    errCount++;
+  }
+  // 3초 동안 점점 빨라지며 아무 데나 쏟아진다
+  const STORM_MS = 3000;
+  function errStorm() {
+    errBus = ac.createGain(); errBus.gain.value = 1;
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 6;
+    errBus.connect(comp).connect(master);
+    errCount = 0;
+    const t0 = performance.now(); stormStart = t0;
+    (function next() {
+      const p = (performance.now() - t0) / STORM_MS;
+      if (p >= 1) {
+        errTimer = null;
+        // 몰아친 뒤 정적: 창은 그대로 멈추고 소리와 노이즈만 빠진다
+        clearInterval(redRamp); setVisualNoise(0.04); setNoise(0, 0.05); setDrone(0.035, 0.6);
+        later(1400, () => { awaitTouch = true; });
+        return;
+      }
+      spawnErr();
+      if (p > 0.55 && Math.random() < 0.5) spawnErr();
+      errTimer = setTimeout(next, 10 + 190 * Math.pow(1 - p, 2.4));
+    })();
+  }
+  /* ---------- 터치하면: 거짓말 → 어딨어? 누구야? ---------- */
+  const scrawl = $('scrawl'), lie = $('lie');
+  let awaitTouch = false, scrawlTimer = null;
+  function boom() {
+    if (!ac) return;
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.5);
+    g.gain.setValueAtTime(0.7, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+    o.connect(g).connect(master); o.start(t); o.stop(t + 0.75);
+    crackle(180, 0.35);
+  }
+  function writeOut() {
+    const phrase = '어딨어? 누구야? ';
+    const textOf = n => phrase.repeat(Math.ceil(n / phrase.length) + 1).slice(0, n);
+    // 화면에 들어갈 글자 수를 미리 재고, 원래 속도보다 전체가 1초 빨리 끝나도록 맞춘다
+    let lo = 0, hi = 6000;
+    while (lo < hi) { const m = (lo + hi + 1) >> 1; scrawl.textContent = textOf(m); if (scrawl.scrollHeight > scrawl.clientHeight + 4) hi = m - 1; else lo = m; }
+    scrawl.textContent = '';
+    // 빠른 속도(글자당 평균 17ms)로 7초 동안 쓴다
+    // 화면을 꽉 채울 만큼 쓰되, 정확히 7초 안에 끝낸다 (처음엔 느리게, 갈수록 빠르게)
+    const N = Math.max(1, lo), baseDelay = i => 26 - 18 * (i / N);
+    const cum = []; let acc = 0; for (let j = 0; j < N; j++) { cum.push(acc); acc += baseDelay(j + 1); }
+    const k = 7000 / acc;
+    // 뒤로 갈수록 글자가 망가진다
+    const JAMO = 'ㅇㄷㄴㄱㅜㅑㅓㅣㅆ';
+    const plain = textOf(N);
+    const glyphs = [...plain].map((c, idx) => {
+      // 중간까지는 멀충하고, 그 뒤부터 점점 깨진다
+      const q = Math.max(0, (idx / Math.max(1, N - 1) - 0.5) / 0.5);
+      if (c === ' ' || q === 0 || Math.random() > Math.pow(q, 1.2) * 0.9) return document.createTextNode(c);
+      let g = c;
+      const r = Math.random();
+      if (r < 0.3) g = String.fromCharCode(0xAC00 + (Math.random() * 11172 | 0));
+      else if (r < 0.5) g = JAMO[Math.random() * JAMO.length | 0];
+      else if (r < 0.62) g = ['▒', '?', '▓', '_'][Math.random() * 4 | 0];
+      const sp = document.createElement('span');
+      sp.textContent = g;
+      sp.style.display = 'inline-block';
+      sp.style.transform = `translateY(${rand(-5, 5) * q | 0}px) rotate(${(rand(-35, 35) * q).toFixed(0)}deg) scale(${(1 + rand(-0.3, 0.6) * q).toFixed(2)})`;
+      sp.style.opacity = (1 - rand(0, 0.55) * q).toFixed(2);
+      if (Math.random() < q * 0.4) sp.style.color = '#7a0008';
+      return sp;
+    });
+    let i = 0;
+    const b = ac ? ac.createGain() : null; if (b) { b.gain.value = 1; b.connect(master); }
+    const t0 = performance.now(); let lastTick = 0;
+    (function step() {
+      const el = performance.now() - t0;
+      const frag = document.createDocumentFragment();
+      while (i < N && cum[i] * k <= el) frag.appendChild(glyphs[i++]);
+      scrawl.appendChild(frag);
+      if (b && el - lastTick > 28) { lastTick = el; tick(ac.currentTime, 0.12, rand(0.5, 0.7), b); }
+      if (i >= N) {
+        // 다 쓰자마자 틈 없이 빨간 화면으로 암전
+        redOut();
+        return;
+      }
+      scrawlTimer = setTimeout(step, 12);
+    })();
+  }
+  // 다 쓰고 나서 터치: 붉게 깜빡이다가 갑자기 밝은 화면으로
+  const flash = $('flash'), bright = $('bright');
+  let awaitTouch2 = false;
+  function redOut() {
+    flash.style.transition = 'none'; flash.style.background = '#b5000c'; flash.style.opacity = 1;
+    setNoise(0, 0.002); setDrone(0, 0.02); setVisualNoise(0);
+    boom();
+    // 빨간 암전이 서서히 검게 꺼지고, 잠시 어둠이 흐른 뒤 로딩 화면으로
+    later(900, () => { flash.style.transition = 'background-color 1.8s ease'; flash.style.background = '#000'; });
+    later(900 + 1800 + 900, () => {
+      flash.style.transition = 'none'; flash.style.opacity = 0; flash.style.background = '';
+      toBright();
+      requestAnimationFrame(() => { flash.style.transition = ''; });
+    });
+  }
+  // 흰 바탕화면: 커서만 깜빡이다가, 그 앱이 다시 가운데에 뜬다
+  function toBright() {
+    bright.hidden = false;
+    setDrone(0, 0.05);
+    lie.hidden = true; scrawl.textContent = ''; errs.innerHTML = '';
+    setVisualNoise(0); setNoise(0, 0.002); redMode = false;
+    if (clickBus) { clickBus.disconnect(); clickBus = null; }
+    later(3000, () => {
+      bright.hidden = true;
+      appscreen.hidden = false;
+      appicon.classList.remove('popin'); void appicon.offsetWidth; appicon.classList.add('popin');
+      if (ac) softTone(660, 0.05, 0.2);
+    });
+  }
+  stage.addEventListener('pointerdown', () => {
+    if (!awaitTouch2) return;
+    awaitTouch2 = false;
+    const pattern = [1, 0, 1, 0, 0.6, 0, 1, 0.3, 1, 0, 1];
+    let t = 0;
+    pattern.forEach(v => {
+      const d = rand(55, 130);
+      later(t, () => { flash.style.opacity = v; if (v > 0.5) crackle(rand(40, 90), rand(0.15, 0.3)); });
+      t += d;
+    });
+    later(t, () => {
+      flash.style.opacity = 0;
+      bright.hidden = false;
+      setDrone(0, 0.05);
+      lie.hidden = true; scrawl.textContent = ''; errs.innerHTML = '';
+      setVisualNoise(0); setNoise(0, 0.002); redMode = false;
+      if (clickBus) { clickBus.disconnect(); clickBus = null; }
+      later(2300, () => { choice.hidden = false; });
+    });
+  });
+
+  /* ---------- 꿈인가? → 노란 엑스 → 접속 → 종말 ---------- */
+  const choice = $('choice'), xscreen = $('xscreen'), conn = $('conn');
+  const connBox = $('connBox'), connLabel = $('connLabel'), connFill = $('connFill');
+  function softTone(f, v, d) {
+    if (!ac) return;
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g).connect(master); o.start(t); o.stop(t + d + 0.02);
+  }
+  choice.addEventListener('click', () => {
+    choice.hidden = true;
+    flash.style.background = '#000'; flash.style.zIndex = '31';
+    flash.style.opacity = 1;
+    crackle(70, 0.25);
+    later(110, () => { flash.style.opacity = 0; });
+    later(230, () => {
+      flash.style.background = ''; flash.style.zIndex = '';
+      bright.hidden = true;
+      appscreen.hidden = false;
+      if (ac) tick(ac.currentTime, 0.3, 0.8, master);
+    });
+  });
+  // 흰 화면 가운데 앱 아이콘 → 누르면 꽉 찬 노란 엑스 화면
+  const appscreen = $('appscreen');
+  // 앱이 켜지듯 아이콘에서 화면 전체로 커지고, 잠시 뜨었다가 알아서 로딩으로 넘어간다
+  const appicon = $('appicon');
+  // 앱을 누르면 오류였다며 재접속한다는 안내가 뜨고, 그다음 앱이 켜진다
+  const toast = $('toast');
+  appicon.addEventListener('click', () => {
+    if (appicon.dataset.used) return;
+    appicon.dataset.used = '1';
+    toast.hidden = false;
+    if (ac) { tick(ac.currentTime, 0.25, 1.2, master); }
+    later(1900, () => { toast.hidden = true; launchApp(); });
+  });
+  function launchApp() {
+    const sr = stage.getBoundingClientRect(), ir = appicon.getBoundingClientRect();
+    const sx = ir.width / sr.width, sy = ir.height / sr.height;
+    const kk = sr.width / stage.offsetWidth;
+    const ox = (ir.left - sr.left + ir.width / 2) / kk, oy = (ir.top - sr.top + ir.height / 2) / kk;
+    xscreen.style.transformOrigin = `${ox}px ${oy}px`;
+    xscreen.style.transition = 'none';
+    xscreen.style.transform = `scale(${sx}, ${sy})`;
+    xscreen.style.borderRadius = `${(ir.width * 0.3 / kk) / sx}px / ${(ir.height * 0.3 / kk) / sy}px`;
+    xscreen.hidden = false;
+    void xscreen.offsetWidth;
+    xscreen.style.transition = 'transform .5s cubic-bezier(.25,.9,.3,1), border-radius .5s cubic-bezier(.25,.9,.3,1)';
+    xscreen.style.transform = 'none';
+    xscreen.style.borderRadius = '0';
+    if (ac) softTone(520, 0.06, 0.25);
+    later(560, () => { appscreen.hidden = true; connectChime(); });
+    later(560 + 1700, openConn);
+  }
+  // 정상적으로 접속될 때의 밝은 소리
+  function connectChime() {
+    if (!ac) return;
+    const t = ac.currentTime;
+    [[659.25, 0, 0.35], [987.77, 0.11, 0.6]].forEach(([f, d, len]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.14, t + d + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d + len);
+      o.connect(g).connect(master); o.start(t + d); o.stop(t + d + len + 0.03);
+    });
+  }
+  // 종말 문구를 타자기처럼 한 자씩 (빠진 두 문장 자리는 비워 둔 채로)
+  const endText = $('connEnd');
+  const endNodes = [];
+  (function collect(node) {
+    node.childNodes.forEach(c => {
+      if (c.nodeType === 3) endNodes.push({ node: c, text: c.textContent });
+      else if (!c.classList.contains('late')) collect(c);
+    });
+  })(endText);
+  function clearEnd() { endNodes.forEach(e => { e.node.textContent = ''; }); }
+  function restoreEnd() { endNodes.forEach(e => { e.node.textContent = e.text; }); }
+  function typeEnd(done) {
+    clearEnd();
+    let n = 0, c = 0;
+    (function next() {
+      if (n >= endNodes.length) { done && done(); return; }
+      const e = endNodes[n];
+      if (c >= e.text.length) { n++; c = 0; return next(); }
+      const ch = e.text[c++];
+      e.node.textContent += ch;
+      if (ch === '\n') return later(90, next);
+      if (ac && ch !== ' ') { tick(ac.currentTime, 0.4, rand(0.85, 1.05), master); tick(ac.currentTime + 0.012, 0.18, 0.5, master); }
+      later(ch === '-' ? 70 : rand(110, 170), next);
+    })();
+  }
+  function openConn() {
+    xscreen.hidden = true;
+    conn.hidden = false;
+    // 멈칫거리며 차오르는 로딩 바
+    const stops = [[0, 0], [300, 18], [650, 22], [900, 47], [1500, 51], [1750, 79], [2200, 86], [2500, 100]];
+    stops.forEach(([t, w]) => later(t, () => { connFill.style.width = w + '%'; if (w) tick(ac.currentTime, 0.18, 0.9, master); }));
+    later(2750, () => { connLabel.textContent = '접속이 완료되었습니다'; softTone(880, 0.12, 0.6); });
+    later(4300, () => { connBox.style.opacity = 0; });
+    // 아무것도 없는 공백이 길게 흐른 뒤 한 자씩 찍힌다
+    later(4300 + 3200, () => {
+      endText.style.transition = 'none';
+      clearEnd(); conn.classList.add('done');
+      typeEnd(() => later(900, () => { awaitTouch3 = true; }));
+    });
+  }
+  // 마지막 화면을 터치하면 빠져 있던 두 문장이 차례로 떠오른다
+  let awaitTouch3 = false;
+  const late1 = $('late1'), late2 = $('late2'), eoh = $('eoh');
+
+  /* ---------- 어? → 느린 두 번의 암전 → 자판기 → 사원증 툭 ---------- */
+  const vend = $('vend'), dim = $('dim'), vCard = $('vCard'), vCardBin = $('vCardBin'), vFlap = $('vFlap');
+  (function buildVend() {
+    const cols = ['#3a2a24', '#22303a', '#2e3324', '#3a3326', '#2c2433', '#352222'];
+    let s = '';
+    for (let r = 0; r < 5; r++) {
+      const y = 74 + r * 40;
+      s += `<rect x="16" y="${y}" width="118" height="2.5" fill="#262a2f"/>`;
+      // 텐 빈 칸: 선반만 남기고 물건은 없다
+    }
+    $('vShelves').innerHTML = s;
+    let b = '';
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) b += `<rect x="${147 + c * 12}" y="${64 + r * 18}" width="9" height="9" rx="1" fill="#24262a" stroke="#33363b" stroke-width=".4"/>`;
+    $('vButtons').innerHTML = b;
+  })();
+  function clunk(vol = 0.5) {
+    if (!ac) return;
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.1);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+    o.connect(g).connect(master); o.start(t); o.stop(t + 0.18);
+    tick(t, vol * 0.8, 0.5, master);
+  }
+  /* ---------- 사원증을 누르면 크게 → 터치하면 검은 상자 ---------- */
+  const idbig = $('idbig'), note = $('note');
+  let cardReady = false, awaitNote = false;
+  vend.addEventListener('click', () => {
+    if (!cardReady) return;
+    cardReady = false; vend.style.cursor = '';
+    idbig.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => idbig.classList.add('on')));
+    if (ac) { tick(ac.currentTime, 0.3, 0.8, master); softTone(220, 0.08, 0.4); }
+    later(900, () => { awaitNote = true; });
+  });
+  idbig.addEventListener('pointerdown', () => {
+    if (!awaitNote) return;
+    awaitNote = false;
+    note.hidden = false;
+    noteStep = 0; noteText.innerHTML = NOTES[0];
+    boom();
+    later(500, () => { noteReady = true; });
+  });
+
+  // 검은 상자를 누를 때마다 다음 상자
+  const noteText = $('noteText');
+  const S = w => `<span class="note__strike">${w}</span>`, R = t => `<span class="note__red">${t}</span>`;
+  const NOTES = [
+    `[어둠탐사기록 ${S('캐릭터')} 메이커]\n\n${R('소중하게 간직한다면서 이\n\n거짓말쟁이야 너 신분증 어딨어')}`,
+    `[어둠탐사기록 ${S('죽은자')} 메이커]\n\n${R('김솔음 주임님\n\n사원증 어딨어요?')}`,
+    `[어둠탐사기록 ■■■ 메이커]\n\n${R('어디 있지?\n\n안 보이는데?')}`,
+    `[어둠■■■■ ■■■ 메■■]\n\n<span class="note__red spill-from">거짓말</span>`
+  ];
+  let noteStep = 0, noteReady = false, spillTimer = null;
+  note.addEventListener('pointerdown', () => {
+    if (!noteReady || noteStep >= NOTES.length - 1) return;
+    noteReady = false;
+    noteStep++;
+    noteText.innerHTML = NOTES[noteStep];
+    crackle(90, 0.25); if (noteStep === NOTES.length - 1) boom(); else clunk(0.35);
+    setVisualNoise(0.3); setTimeout(() => setVisualNoise(0), 90);
+    if (noteStep === NOTES.length - 1) later(900, spill);
+    else later(400, () => { noteReady = true; });
+  });
+  // 마지막: 상자 밖으로 흘러넘치는 거짓말 70번
+  function spill() {
+    // 첫 '거짓말' 바로 밑에서 한 줄 띄우고 쓰기 시작한다
+    const from = noteText.querySelector('.spill-from');
+    const lh = parseFloat(getComputedStyle(noteText).lineHeight) || from.offsetHeight;
+    const box = document.createElement('div');
+    box.className = 'spill';
+    box.style.top = (from.offsetTop + lh * 2) + 'px';
+    noteText.appendChild(box);
+    let n = 0;
+    (function write() {
+      box.textContent += (n ? ' ' : '') + '거짓말';
+      n++;
+      if (ac) tick(ac.currentTime, 0.14, rand(0.5, 0.75), master);
+      if (n < 70) spillTimer = setTimeout(write, Math.max(22, 90 - n * 1.4));
+      else { setDrone(0.02, 0.6); later(1500, () => { setDrone(0.07, 1.5); rainCards(); }); }
+    })();
+  }
+
+  /* ---------- 사원증이 쿠두둑 → 하나를 누르면 하얀 상자 ---------- */
+  const rain = $('rain'), wbox = $('wbox'), wboxText = $('wboxText'), restart = $('restart');
+  let rainCardsList = [], rainRaf = null, rainGeo = null, rainLast = 0, wStep = -1, wReady = false;
+  function rainCards() {
+    rain.hidden = false;
+    const W = stage.clientWidth, H = stage.clientHeight;
+    // 화면이 다 덮일 때까지 우르르 쏟아진다: 아래 줄부터 빈틈 없는 자리를 미리 정해 두고 그 자리로 떨어뜨린다
+    const cw = Math.max(54, Math.min(74, W * 0.165));
+    rainGeo = { W, H, cw, ch: cw * 1.58, lastTick: 0 };
+    const rowStep = cw * 0.5, colStep = cw * 0.62, targets = [];
+    for (let y = H + cw * 0.1, r = 0; y > -cw * 0.6; y -= rowStep, r++) {
+      for (let x = (r % 2) * colStep * 0.5 - cw * 0.2; x < W + cw * 0.3; x += colStep) {
+        targets.push({ x: x + rand(-cw * 0.18, cw * 0.18), y: y + rand(-cw * 0.12, cw * 0.12) });
+      }
+    }
+    // 같은 줄 안에서는 순서를 섞어 우르르 쏟아지는 느낌
+    const rows = {};
+    targets.forEach(t => { const k = Math.round(t.y / rowStep); (rows[k] = rows[k] || []).push(t); });
+    const ordered = Object.keys(rows).map(Number).sort((a, b) => b - a).flatMap(k => rows[k].sort(() => Math.random() - 0.5));
+    const N = ordered.length;
+    ordered.forEach((t, i) => later(Math.pow(i / N, 0.9) * 850 + rand(0, 40), () => rainOne(t)));
+    pourSound(1.2);
+  }
+  function rainOne(t) {
+    if (!rainGeo) return;
+    const { cw, ch } = rainGeo;
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'mini'; el.setAttribute('aria-label', '사원증');
+    el.style.width = cw + 'px'; el.style.height = ch + 'px';
+    el.innerHTML = '<i class="mini__hole"></i><i class="mini__line"></i><i class="mini__line s"></i><i class="mini__line s"></i>';
+    el.addEventListener('click', pickCard);
+    rain.appendChild(el);
+    rainCardsList.push({ el, x: t.x, ty: t.y, y: -ch, vy: rand(900, 1400), rot: rand(-180, 180), vr: rand(-480, 480), landed: false, settle: null, done: false });
+    if (!rainRaf) { rainLast = performance.now(); rainRaf = requestAnimationFrame(rainLoop); }
+  }
+  function rainLoop(ts) {
+    const dt = Math.min(0.033, (ts - rainLast) / 1000); rainLast = ts;
+    const g = rainGeo; if (!g) { rainRaf = null; return; }
+    const { cw, ch } = g;
+    let active = 0;
+    for (const c of rainCardsList) {
+      if (c.done) continue; active++;
+      let bounce = 0;
+      if (!c.landed) {
+        c.vy += 5200 * dt; c.y += c.vy * dt; c.rot += c.vr * dt;
+        if (c.y >= c.ty) {
+          c.y = c.ty; c.landed = true;
+          c.settle = { from: c.rot, to: Math.round((c.rot - 90) / 180) * 180 + 90 + rand(-30, 30), t: 0 };
+          if (ac && performance.now() - g.lastTick > 22) { g.lastTick = performance.now(); tick(ac.currentTime, rand(0.14, 0.3), rand(0.42, 0.72), master); }
+        }
+      } else {
+        const s = c.settle; s.t += dt;
+        const k = Math.min(1, s.t / 0.16), e = 1 - Math.pow(1 - k, 3);
+        c.rot = s.from + (s.to - s.from) * e;
+        bounce = -Math.sin(k * Math.PI) * cw * 0.12;
+        if (k >= 1) c.done = true;
+      }
+      c.el.style.transform = `translate(${(c.x - cw / 2).toFixed(1)}px, ${(c.y + bounce - ch / 2).toFixed(1)}px) rotate(${c.rot.toFixed(1)}deg)`;
+    }
+    rainRaf = active ? requestAnimationFrame(rainLoop) : null;
+  }
+
+  const BLUE = t => `<span class="blue" id="wBlue">${t}</span>`;
+  const WSTEPS = [
+    `[어둠탐사기록 캐릭터 메이커]\n\n${BLUE('▶ 로딩 중')}`,
+    `[어둠탐사기록 캐릭터 메이커]\n\n${BLUE('▶ 관리자 인증 대기 중')}`,
+    `[어둠탐사기록 캐릭터 메이커]\n\n${BLUE('확인용 질문:\n\n소중히 간직해 주실 거죠?')}`
+  ];
+  function pickCard(e) {
+    e.stopPropagation();
+    if (wStep >= 0) return;
+    wStep = 0;
+    wboxText.innerHTML = WSTEPS[0];
+    wbox.hidden = false;
+    clunk(0.4);
+    later(400, () => { wReady = true; });
+  }
+  wbox.addEventListener('pointerdown', () => {
+    if (!wReady || wStep >= WSTEPS.length - 1) return;
+    wReady = false;
+    const blue = $('wBlue');
+    // 파란 글씨가 깜빡이다가 바뀐다
+    for (let i = 0; i < 6; i++) later(i * 110, () => { blue.style.visibility = i % 2 ? '' : 'hidden'; if (ac && i % 2 === 0) tick(ac.currentTime, 0.12, 1.4, master); });
+    later(700, () => {
+      wStep++;
+      wboxText.innerHTML = WSTEPS[wStep];
+      if (wStep === WSTEPS.length - 1) {
+        // 질문도 깜빡깜빡
+        later(1500, () => {
+          const q = $('wBlue');
+          for (let i = 0; i < 6; i++) later(i * 110, () => { q.style.visibility = i % 2 ? '' : 'hidden'; if (ac && i % 2 === 0) tick(ac.currentTime, 0.12, 1.4, master); });
+        });
+        later(1500 + 700 + 500, faithCard);
+      }
+      else later(300, () => { wReady = true; });
+    });
+  });
+
+  /* ---------- 다른 창 싹 꺼지고 사원증 크게 → 미친 듯 깜빡 → 하얀 화면 ---------- */
+  const ID_ORIG = ['[초■연 재■관리국]', '■■■요원', '신규조■반'];
+  const ID_FAITH = ['[무명찬란교]', '■■■ ■■', '하얀색 교단'];
+  function setIdText(lines) { [...document.querySelectorAll('.idbig__card .idt')].forEach((s, i) => { s.textContent = lines[i]; }); }
+  function faithCard() {
+    stopEerie(0.2);
+    cutFx(200, ['#fff', '#1840d8', '#000']);
+    wbox.hidden = true; rain.hidden = true; note.hidden = true; vend.hidden = true;
+    cancelAnimationFrame(rainRaf); rainRaf = null;
+    setVisualNoise(0); crackle(60, 0.2);
+    setIdText(ID_FAITH);
+    idbig.classList.add('solo');
+    const card = $('idbigCard');
+    card.style.transition = 'none'; idbig.classList.remove('on'); void card.offsetWidth;
+    card.style.transition = ''; idbig.classList.add('on');
+    // 1.6초 뒤 미친 듯이 깜빡인다
+    later(1600, () => {
+      const end = performance.now() + 1800;
+      (function strobe() {
+        if (performance.now() > end) {
+          card.style.opacity = ''; card.style.filter = '';
+          setNoise(0, 0.002); setVisualNoise(0);
+          // 사원증이 사라지고 아무것도 없는 검은 공백이 잠시 흐른다
+          idbig.hidden = true;
+          later(3600, typeRestart);
+          return;
+        }
+        const r = Math.random();
+        card.style.opacity = r < 0.35 ? 0 : 1;
+        card.style.filter = r > 0.75 ? 'invert(1) brightness(1.4)' : '';
+        setVisualNoise(rand(0, 0.5));
+        setNoise(rand(0.05, 0.35), 0.003);
+        spillTimer = setTimeout(strobe, rand(30, 90));
+      })();
+    });
+  }
+  // 다시 시작하시겠습니까? 를 타자기처럼 한 자씩
+  function typeRestart() {
+    const q = restart.querySelector('.restart__q'), text = '다시 시작하시겠습니까?';
+    q.textContent = '';
+    restart.hidden = false;
+    let i = 0;
+    later(500, function type() {
+      q.textContent = text.slice(0, ++i);
+      if (ac && text[i - 1] !== ' ') { tick(ac.currentTime, 0.45, rand(0.85, 1.05), master); tick(ac.currentTime + 0.012, 0.2, 0.5, master); }
+      if (i < text.length) later(text[i - 1] === ' ' ? 200 : rand(90, 160), type);
+      else {
+        // 다 치고 나면 빨갛게 한 번 깜빡, 그다음 선택지
+        // 글자가 빨갛게 한 번 깜빡
+        [700].forEach(t => later(t, () => {
+          q.style.color = '#d0101c';
+          if (ac) crackle(70, 0.15);
+          later(140, () => { q.style.color = ''; });
+        }));
+        later(2000, () => { opts.hidden = false; });
+      }
+    });
+  }
+
+  /* ---------- yes / 예 → 뒤죽박죽 → 무지개 환영 → 남해지사 → Z999 ---------- */
+  const opts = $('opts'), chaos = $('chaos'), welcome = $('welcome'), wOrg = $('wOrg'), wBig = $('wBig'), wSmall = $('wSmall'), finalEl = $('final');
+  let chaosTimer = null, welcomeStep = 0, welcomeReady = false;
+  opts.addEventListener('click', e => {
+    const b = e.target.closest('.opt'); if (!b || opts.dataset.used) return;
+    opts.dataset.used = '1';
+    b.classList.add('pressed');
+    if (ac) tick(ac.currentTime, 0.4, 0.9, master);
+    later(320, startChaos);
+  });
+  // 텔레비전 노이즈: 흑백 지지직 + 굴러가는 띠
+  function startChaos() {
+    chaos.hidden = false;
+    chaos.innerHTML = '<canvas width="206" height="446" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated"></canvas>';
+    const cv = chaos.firstChild, cx = cv.getContext('2d'), im = cx.createImageData(cv.width, cv.height), px = im.data;
+    const end = performance.now() + 2200;
+    let roll = 0;
+    if (ac) setNoise(0.4, 0.01);
+    (function frame() {
+      if (performance.now() > end) {
+        chaos.hidden = true; chaos.innerHTML = '';
+        setNoise(0, 0.002); setBeep(0, 0.002); setVisualNoise(0);
+        restart.hidden = true; idbig.hidden = true; restart.style.transform = '';
+        welcome.hidden = false;
+        setDrone(0, 0.05);
+        if (ac) { softTone(784, 0.1, 0.5); setTimeout(() => softTone(1046, 0.1, 0.7), 140); }
+        later(500, () => { welcomeReady = true; });
+        return;
+      }
+      roll = (roll + 7) % cv.height;
+      for (let y = 0; y < cv.height; y++) {
+        const band = Math.abs(y - roll) < 18 ? 45 : 0, line = (y % 2) * 18;
+        for (let x = 0; x < cv.width; x++) {
+          const v = Math.min(255, (Math.random() * 235 | 0) + band - line), i = (y * cv.width + x) * 4;
+          px[i] = px[i + 1] = px[i + 2] = v; px[i + 3] = 255;
+        }
+      }
+      cx.putImageData(im, 0, 0);
+      setNoise(rand(0.3, 0.45), 0.003);
+      chaosTimer = requestAnimationFrame(frame);
+    })();
+  }
+  let finalReady = false;
+  const finalInner = finalEl.querySelector('.final__inner'), FINAL_ORIG = finalInner.innerHTML;
+  finalEl.addEventListener('pointerdown', () => {
+    if (!finalReady) return;
+    finalReady = false;
+    cutFx(120, ['#d11a1a', '#000', '#fff']);
+    finalInner.innerHTML = '<p class="final__code">소모품</p>';
+    $('finalStatus').classList.add('done');
+    crackle(60, 0.15);
+    later(1000, shutdown);
+  });
+  // 짜란~: 밝게 올라가는 짧은 축하 음
+  function fanfare() {
+    const t = ac.currentTime + 0.04;
+    const notes = [[523.25, 0, 0.12], [659.25, 0.1, 0.12], [783.99, 0.2, 0.12], [1046.5, 0.32, 0.9]];
+    notes.forEach(([f, d, len]) => {
+      [['square', 0.05], ['triangle', 0.12]].forEach(([ty, v]) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = ty; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(v, t + d + 0.01);
+        g.gain.setValueAtTime(v, t + d + len * 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + d + len);
+        o.connect(g).connect(master); o.start(t + d); o.stop(t + d + len + 0.05);
+      });
+    });
+    // 마지막 화음
+    [659.25, 783.99].forEach(f => {
+      const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + 0.32); g.gain.exponentialRampToValueAtTime(0.07, t + 0.34); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+      o.connect(g).connect(master); o.start(t + 0.32); o.stop(t + 1.25);
+    });
+  }
+  // 배정 중입니다...: 코드·분류·기한이 슬롯처럼 돌다가 Z999 / 작업자 / 84일에 멈춘다
+  function assignRoll() {
+    const st = $('finalStatus'), inner = finalEl.querySelector('.final__inner');
+    const fCode = $('fCode'), fClass = $('fClass'), fDays = $('fDays');
+    const L = 'XYZ', JOBS = ['관리자', '탐사자', '연구원', '안내원', '감시자', '■■■', '작업자', '보조원'];
+    st.classList.remove('done', 'complete'); st.innerHTML = '배정 중입니다<span id="finalDots">...</span>'; inner.classList.add('rolling');
+    let d = 0; const dotTimer = setInterval(() => { const dots = $('finalDots'); if (dots) dots.textContent = '.'.repeat(1 + (d++ % 3)); }, 350);
+    const start = performance.now(), DUR = 3400;
+    (function roll() {
+      const p = (performance.now() - start) / DUR;
+      if (p >= 1) {
+        clearInterval(dotTimer);
+        fCode.textContent = 'Z999'; fClass.textContent = '분류: 작업자'; fDays.textContent = '남은 기한: 84일';
+        inner.classList.remove('rolling');
+        st.textContent = '배정 완료되었습니다!'; st.classList.add('complete');
+        if (ac) { tick(ac.currentTime, 1, 1.5, master); fanfare(); }
+        later(1200, () => { finalReady = true; });
+        return;
+      }
+      fCode.textContent = L[Math.random() * L.length | 0] + String(Math.random() * 1000 | 0).padStart(3, '0');
+      fClass.textContent = '분류: ' + JOBS[Math.random() * JOBS.length | 0];
+      fDays.textContent = '남은 기한: ' + (1 + (Math.random() * 999 | 0)) + '일';
+      if (ac) tick(ac.currentTime, 0.18, rand(0.9, 1.2), master);
+      later(45 + 260 * Math.pow(p, 2.2), roll);
+    })();
+  }
+  // 깜빡거리다가 오래된 화면처럼 한 줄로 접히며 꺼진다
+  function shutdown() {
+    const seq = [0, 1, 0, 1, 0.3, 1, 0, 1, 0, 0.6, 0, 1];
+    let t = 0;
+    seq.forEach(v => { later(t, () => { finalEl.style.opacity = v; if (v > 0.5) crackle(40, 0.12); }); t += rand(50, 120); });
+    later(t, () => {
+      finalEl.style.opacity = 1;
+      finalEl.classList.add('off');
+      // 꺼진 뒤에는 완전히 검은 화면만 남긴다
+      dim.style.transition = 'none'; dim.style.zIndex = '41'; dim.style.opacity = 1;
+      if (ac) softTone(140, 0.2, 0.5);
+      later(900, () => { ended = true; pwr.classList.add('nudge'); navpill.classList.add('tap'); });
+    });
+  }
+  welcome.addEventListener('pointerdown', () => {
+    if (!welcomeReady) return;
+    welcomeReady = false;
+    if (welcomeStep === 0) {
+      welcomeStep = 1;
+      cutFx(120, ['#fff', '#000']);
+      wBig.hidden = true; wSmall.hidden = true; wOrg.hidden = false;
+      // 한 줄씩 쾅 박히듯이
+      // 한 줄씩 부드럽게 떠오른다
+      [...wOrg.children].forEach((sp, i) => later(150 + i * 420, () => sp.classList.add('slam')));
+      crackle(80, 0.2);
+      later(1900, () => { welcomeReady = true; });
+    } else {
+      welcomeStep = 2;
+      welcome.hidden = true; finalEl.hidden = false;
+      if (ac) tick(ac.currentTime, 0.35, 0.6, master);
+      assignRoll();
+    }
+  });
+
+  function dropIdCard() {
+    // 선반에서 밀려나와 유리 안쪽으로 떨어진다
+    let y = 98, vy = 0, rot = 0, last = performance.now();
+    const x = 86;
+    vCard.setAttribute('opacity', '1');
+    if (ac) tick(ac.currentTime, 0.25, 0.7, master);
+    (function fall(ts) {
+      ts = ts || performance.now();
+      const dt = Math.min(0.033, (ts - last) / 1000); last = ts;
+      vy += 520 * dt; y += vy * dt; rot += 260 * dt;
+      vCard.setAttribute('transform', `translate(${x} ${y.toFixed(1)}) rotate(${rot.toFixed(1)})`);
+      if (y < 262) { requestAnimationFrame(fall); return; }
+      vCard.setAttribute('opacity', '0');
+      // 취출구에 툭
+      vCardBin.setAttribute('opacity', '1');
+      vFlap.setAttribute('transform', 'translate(0 -3)');
+      setTimeout(() => vFlap.removeAttribute('transform'), 140);
+      clunk(0.55);
+      setTimeout(() => { cardReady = true; vend.style.cursor = 'pointer'; }, 300);
+    })();
+  }
+  function whoosh() {
+    if (!ac) return;
+    const t = ac.currentTime, len = 0.6;
+    const buf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.2;
+    bp.frequency.setValueAtTime(400, t); bp.frequency.exponentialRampToValueAtTime(2400, t + len);
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + len * 0.85); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    src.connect(bp).connect(g).connect(master); src.start(t);
+  }
+  // 스산한 배경음: 텅 빈 폐건물. 바람, 낮은 울림, 물방울, 철이 삐걱이는 소리, 멀리서 작게 도는 룰렛
+  let eerie = null;
+  function startEerie() {
+    if (!ac || eerie) return;
+    const t0 = ac.currentTime;
+    const bus = ac.createGain(); bus.gain.setValueAtTime(0.0001, t0); bus.gain.exponentialRampToValueAtTime(1, t0 + 3);
+    bus.connect(master);
+    const nodes = [], timers = [];
+    const noiseBuf = (() => { const b = ac.createBuffer(1, ac.sampleRate * 4, ac.sampleRate), d = b.getChannelData(0); let last = 0; for (let i = 0; i < d.length; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; } return b; })();
+    // 바람: 붉은 잡음을 좁은 대역으로 걸러 천천히 음높이가 흔들리게
+    [[320, 0.5], [560, 0.25]].forEach(([f, v]) => {
+      const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+      const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 6;
+      const lfo = ac.createOscillator(); lfo.frequency.value = rand(0.04, 0.09);
+      const lg = ac.createGain(); lg.gain.value = f * 0.45; lfo.connect(lg).connect(bp.frequency); lfo.start();
+      const g = ac.createGain(); g.gain.value = v;
+      const alfo = ac.createOscillator(); alfo.frequency.value = rand(0.07, 0.13);
+      const ag = ac.createGain(); ag.gain.value = v * 0.7; alfo.connect(ag).connect(g.gain); alfo.start();
+      src.connect(bp).connect(g).connect(bus); src.start();
+      nodes.push(src, lfo, alfo);
+    });
+    // 건물 전체가 낮게 웅웅 울리는 소리
+    [[38, 0.12], [57.3, 0.05]].forEach(([f, v]) => {
+      const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const g = ac.createGain(); g.gain.value = v; o.connect(g).connect(bus); o.start(); nodes.push(o);
+    });
+    const loop = (fn, min, max) => { (function go() { const id = setTimeout(() => { fn(); go(); }, rand(min, max)); timers.push(id); })(); };
+    // 녹슨 철이 길게 삐걱이는 소리
+    loop(() => {
+      const t = ac.currentTime, len = rand(1.2, 2.4), o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(rand(70, 110), t); o.frequency.linearRampToValueAtTime(rand(140, 230), t + len);
+      const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = rand(500, 900); bp.Q.value = 9;
+      const tr = ac.createOscillator(); tr.frequency.value = rand(14, 24); const tg = ac.createGain(); tg.gain.value = 0.02; tr.connect(tg).connect(g.gain); tr.start(t); tr.stop(t + len);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.03, t + len * 0.3); g.gain.linearRampToValueAtTime(0.0001, t + len);
+      o.connect(bp).connect(g).connect(bus); o.start(t); o.stop(t + len + 0.05);
+    }, 6000, 11000);
+    // 멀리서 쿵
+    loop(() => {
+      const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(35, t + 0.5);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+      o.connect(g).connect(bus); o.start(t); o.stop(t + 1);
+    }, 7000, 14000);
+    // 아주 작게, 어딘가에서 드르르륵 도는 룰렛
+    // 드르륵… 틱.
+    loop(() => {
+      let t = 0, last = 0; const st = ac.currentTime + 0.05, dur = rand(0.8, 1.5);
+      while (t < dur) { const p = t / dur; tick(st + t, 0.11 - p * 0.04, rand(0.85, 1.05), bus); last = t; t += 0.02 + Math.pow(p, 2) * 0.13; }
+      tick(st + last + 0.16, 0.26, 1.6, bus); tick(st + last + 0.163, 0.1, 2.4, bus);
+    }, 2400, 4800);
+    eerie = { bus, nodes, stopTimer: () => timers.forEach(clearTimeout) };
+  }
+  function stopEerie(fade = 0.6) {
+    if (!eerie) return;
+    const e = eerie; eerie = null;
+    e.stopTimer();
+    const t = ac.currentTime;
+    e.bus.gain.cancelScheduledValues(t); e.bus.gain.setTargetAtTime(0.0001, t, fade / 3);
+    setTimeout(() => { e.nodes.forEach(n => { try { n.stop(); } catch (err) {} }); e.bus.disconnect(); }, fade * 1000 + 200);
+  }
+  // 와르르: 플라스틱 카드 수백 장이 한꺼번에 쏟아지는 소리
+  function pourSound(len) {
+    if (!ac) return;
+    const t = ac.currentTime, bus = ac.createGain(); bus.gain.value = 1; bus.connect(master);
+    const buf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2200; bp.Q.value = .8;
+    const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.08); g.gain.setValueAtTime(0.22, t + len * 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    src.connect(bp).connect(g).connect(bus); src.start(t);
+    for (let k = 0; k < 140; k++) {
+      const at = Math.pow(Math.random(), 0.8) * len * 0.9;
+      tick(t + at, rand(0.12, 0.38) * (1 - at / len * 0.6), rand(0.5, 1.4), bus);
+    }
+    setTimeout(() => bus.disconnect(), (len + 0.5) * 1000);
+  }
+  // 착: 종이가 탁 붙는 소리
+  function slap() {
+    if (!ac) return;
+    const t = ac.currentTime;
+    const buf = ac.createBuffer(1, ac.sampleRate * 0.12, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ac.sampleRate * 0.018));
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
+    const g = ac.createGain(); g.gain.value = 0.9;
+    src.connect(lp).connect(g).connect(master); src.start(t);
+    const o = ac.createOscillator(), og = ac.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+    og.gain.setValueAtTime(0.4, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+    o.connect(og).connect(master); o.start(t); o.stop(t + 0.18);
+  }
+  // 암전 → 어둠 속에서 사원증 하나가 천천히 다가오듯 확대된다
+  function goVend() {
+    dim.style.opacity = 1;
+    startEerie();
+    later(1800, () => {
+      conn.hidden = true;
+      idbig.classList.add('dark');
+      dim.style.transition = 'none'; dim.style.opacity = 0; void dim.offsetWidth; dim.style.transition = '';
+      setDrone(0.07, 3);
+    });
+    // 어둠이 조금 더 흐른 뒤, 사원증이 날아와 착
+    later(2600, () => {
+      idbig.hidden = false;
+      idbig.classList.add('on', 'fly');
+
+    });
+    later(2600 + 1200, () => { idbig.classList.remove('fly'); awaitNote = true; });
+  }
+  // 두 번 연속으로 누르면 화면을 캡처한다. 캡처본에만 빠져 있던 두 줄이 찍혀 있다
+  let lastTap = 0, shotEl = null;
+  conn.addEventListener('pointerdown', () => {
+    if (!awaitTouch3) return;
+    awaitTouch3 = false;
+    captureScreen();
+  });
+  function shutter() {
+    if (!ac) return;
+    tick(ac.currentTime, 0.9, 0.7, master);
+    tick(ac.currentTime + 0.07, 0.7, 0.55, master);
+  }
+  function captureScreen() {
+    // 캡처하는 척: 화면이 하얗게 번쩍, 찰칵. 화면은 그대로인데 번쩍임이 걷히면 두 줄이 찍혀 있다
+    flash.style.transition = 'none'; flash.style.background = '#fff'; flash.style.zIndex = '44'; flash.style.opacity = .92;
+    shutter();
+    late1.style.transition = 'none'; late2.style.transition = 'none';
+    late1.classList.add('on'); late2.classList.add('on');
+    requestAnimationFrame(() => requestAnimationFrame(() => { flash.style.transition = 'opacity .35s'; flash.style.opacity = 0; }));
+    later(500, () => { flash.style.background = ''; flash.style.zIndex = ''; flash.style.transition = ''; late1.style.transition = ''; late2.style.transition = ''; });
+    later(2600, () => { awaitVend = true; });
+  }
+  // 두 문장이 다 떠오른 뒤 터치하면 자판기 장면으로
+  let awaitVend = false;
+  conn.addEventListener('pointerdown', () => {
+    if (!awaitVend) return;
+    awaitVend = false;
+    if (shotEl) { shotEl.remove(); shotEl = null; }
+    goVend();
+  });
+  stage.addEventListener('pointerdown', () => {
+    if (!awaitTouch) return;
+    awaitTouch = false;
+    errs.innerHTML = ''; card.hidden = true;
+    cutFx(180, ['#ff2a3c', '#fff', '#000']);
+    wheel.style.transition = 'none'; wheel.classList.remove('on');
+    clearInterval(redRamp); setVisualNoise(0.12);
+    lie.hidden = false; lie.classList.remove('hit'); void lie.offsetWidth; lie.classList.add('hit');
+    boom(); setDrone(0.09, 0.3);
+    later(1500, writeOut);
+  });
+
+  /* ---------- 장면 전환용 지직 ---------- */
+  const cutfx = $('cutfx'), hint = $('hint');
+  function cutFx(ms = 150, colors = ['#fff', '#fff', '#ff2a3c']) {
+    if (reduced) return;
+    let html = '';
+    for (let i = 0; i < 6; i++) html += `<i style="top:${rand(0, 100).toFixed(1)}%;height:${rand(2, 22).toFixed(0)}px;background:${colors[Math.random() * colors.length | 0]};opacity:${rand(.3, .9).toFixed(2)};transform:translateX(${rand(-40, 40).toFixed(0)}px)"></i>`;
+    cutfx.innerHTML = html;
+    crackle(ms * 0.8, 0.22);
+    setTimeout(() => { cutfx.innerHTML = ''; }, ms);
+  }
+  // 지금 눌러도 되는 순간이면 아래에 ▼가 깜빡인다
+  setInterval(() => {
+    let wait = false;
+    try {
+      wait = awaitStorm || awaitTouch || awaitTouch2 || awaitTouch3 || awaitVend || awaitNote || (noteReady && noteStep < NOTES.length - 1) ||
+        wReady || welcomeReady || finalReady || cardReady;
+    } catch (e) { wait = false; }
+    hint.classList.toggle('show', !!wait && gate.hidden);
+  }, 200);
+
+  // 룰렛이 멈춘 뒤 화면을 터치하면 오류창이 쏟아진다
+  let awaitStorm = false;
+  stage.addEventListener('pointerdown', () => {
+    if (!awaitStorm) return;
+    awaitStorm = false;
+    if (errTimer || errCount) return;
+    errTimer = -1;
+    crackle(140, 0.3);
+    setVisualNoise(0.5);
+    setTimeout(() => setVisualNoise(0.2), 120);
+    errStorm();
+  });
+
+  /* ---------- 시퀀스 ---------- */
+  function glitchBurst(duration, onDone) {
+    const start = performance.now();
+    (function step() {
+      const el = performance.now() - start;
+      if (el >= duration) { onDone && onDone(); return; }
+      const heavy = Math.random() < 0.55;
+      setVisualNoise(heavy ? rand(0.45, 0.85) : rand(0.05, 0.25));
+      blackout.style.opacity = Math.random() < 0.3 ? 1 : 0;
+      spawnTears(heavy ? (rand(2, 7) | 0) : 0);
+      setNoise(heavy ? rand(0.22, 0.4) : rand(0.03, 0.1), 0.003);
+      timers.push(setTimeout(step, rand(40, 150)));
+    })();
+  }
+
+  function run() {
+    stage.classList.remove('live');
+    titleWrap.classList.remove('on'); title.classList.remove('glitch'); slash.classList.remove('cut');
+    replay.classList.remove('show');
+
+    later(DELAY - 3500, () => swellTinnitus(3.5, 0.28));
+
+    later(DELAY, () => {
+      stage.classList.add('live');
+      setBeep(0.07, 0.03);
+      glitchBurst(2300, () => {
+        blackout.style.opacity = 0;
+        titleWrap.classList.add('on'); title.classList.add('glitch');
+        setVisualNoise(0.35); spawnTears(3); setNoise(0.18, 0.01);
+
+        later(220, () => { setBeep(0, 0.002); setTin(0, 0.002); setVisualNoise(0.12); tears.innerHTML = ''; setNoise(0.03, 0.05); });
+        later(520, () => { title.classList.remove('glitch'); setVisualNoise(0.06); setNoise(0.012, 0.2); });
+        later(1000, () => {
+          slash.classList.add('cut');
+          crackle(120, 0.32);
+          setVisualNoise(0.3);
+          later(120, () => setVisualNoise(0.05));
+        });
+        later(1800, () => { replay.classList.add('show'); idle(); });
+
+        // 타이틀에 줄이 그어지고 2.8초 뒤: 암전 + 룰렛
+        later(1000 + 2800, () => {
+          clearTimeout(idleTimer);
+          title.classList.remove('glitch'); tears.innerHTML = '';
+          titleWrap.classList.remove('on');
+          stage.classList.remove('live');
+          setVisualNoise(0); setNoise(0, 0.003);
+          roulette();
+        });
+      });
+    });
+  }
+
+  function idle() {
+    idleTimer = setTimeout(() => {
+      title.classList.add('glitch'); setVisualNoise(0.25); spawnTears(2);
+      crackle(rand(60, 140), rand(0.06, 0.14));
+      setTimeout(() => { title.classList.remove('glitch'); setVisualNoise(0.05); tears.innerHTML = ''; }, rand(80, 180));
+      idle();
+    }, rand(3500, 8000));
+  }
+
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    clearTimeout(idleTimer);
+    setNoise(0); setBeep(0); setTin(0); setDrone(0, 0.05); stopEerie(0.05);
+    home.hidden = true; launch.hidden = true; lock.hidden = true;
+    toast.hidden = true; appicon.classList.remove('popin'); flash.style.background = ''; flash.style.transition = '';
+    if (clickBus) { clickBus.disconnect(); clickBus = null; }
+    if (errBus) { errBus.disconnect(); errBus = null; }
+    cancelAnimationFrame(wheelRaf); wheelRaf = null; spinPlan = null;
+    wheel.style.transition = 'none'; wheel.classList.remove('on');
+    void wheel.offsetWidth; wheel.style.transition = '';
+    wheelRot.setAttribute('transform', 'rotate(0 100 100)');
+    wheel.classList.remove('lit'); const sg = wheel.querySelector('[data-seg="3"]'); if (sg) sg.setAttribute('fill', '#39ff6a');
+    cutfx.innerHTML = '';
+    clearInterval(redRamp); redMode = false;
+    cancelAnimationFrame(cardRaf); cardRaf = null;
+    card.hidden = true; card.style.transform = ''; tray.style.top = '';
+    clearTimeout(errTimer); errTimer = null; errCount = 0; errs.innerHTML = '';
+    awaitTouch = false; clearTimeout(scrawlTimer); scrawl.textContent = ''; scrawl.style.transition = ''; scrawl.style.opacity = ''; lie.hidden = true; lie.classList.remove('hit');
+    awaitTouch2 = false; flash.style.opacity = 0; bright.hidden = true;
+    choice.hidden = true; xscreen.hidden = true; appscreen.hidden = true;
+    delete appicon.dataset.used; xscreen.style.transform = ''; xscreen.style.transition = ''; xscreen.style.borderRadius = ''; xscreen.style.transformOrigin = ''; conn.hidden = true; conn.classList.remove('done');
+    connBox.style.opacity = ''; connFill.style.width = '0'; connLabel.textContent = '접속 중';
+    restoreEnd(); endText.style.transition = '';
+    awaitTouch3 = false; awaitVend = false; lastTap = 0; if (shotEl) { shotEl.remove(); shotEl = null; } late1.classList.remove('on'); late2.classList.remove('on'); eoh.hidden = true;
+    awaitStorm = false; vend.hidden = true; vend.classList.remove('on'); dim.style.opacity = 0; dim.style.zIndex = ''; dim.style.transition = '';
+    vCard.setAttribute('opacity', '0'); vCardBin.setAttribute('opacity', '0');
+    cardReady = false; awaitNote = false; idbig.hidden = true; idbig.classList.remove('on'); note.hidden = true; vend.style.cursor = '';
+    noteStep = 0; noteReady = false; clearTimeout(spillTimer);
+    cancelAnimationFrame(rainRaf); rainRaf = null; rainGeo = null; rainCardsList = []; rain.innerHTML = ''; rain.hidden = true;
+    wStep = -1; wReady = false; wbox.hidden = true; restart.hidden = true;
+    opts.hidden = true; delete opts.dataset.used; opts.querySelectorAll('.opt').forEach(o => o.classList.remove('pressed'));
+    cancelAnimationFrame(chaosTimer); clearTimeout(chaosTimer); chaos.hidden = true; chaos.innerHTML = ''; restart.style.transform = '';
+    welcome.hidden = true; wBig.hidden = false; wSmall.hidden = false; wOrg.hidden = true; [...wOrg.children].forEach(sp => sp.classList.remove('slam')); wOrg.classList.remove('shake'); welcomeStep = 0; welcomeReady = false;
+    finalEl.hidden = true; finalReady = false; finalInner.innerHTML = FINAL_ORIG; finalEl.classList.remove('off'); finalEl.style.opacity = ''; if (beepOsc) beepOsc.frequency.value = 1000;
+    idbig.classList.remove('solo', 'dark', 'slow', 'fly', 'thump'); setIdText(ID_ORIG);
+    const ic = $('idbigCard'); ic.style.opacity = ''; ic.style.filter = '';
+    setVisualNoise(0); tears.innerHTML = ''; blackout.style.opacity = 0;
+  }
+
+  // 꺼진 폰 → 켜면 텅 빈 홈 화면에 앱 하나 → 그 앱을 누르면 시작
+  const screenEl = document.querySelector('.phone__screen'), home = $('home'), homeApp = $('homeApp'), launch = $('launch');
+  const pwr = document.querySelector('.phone__btn.pwr');
+  screenEl.classList.add('off'); pwr.classList.add('nudge');
+  function powerOn() {
+    if (gate.hidden) return;
+    initAudio();
+    if (ac && ac.state === 'suspended') ac.resume();
+    prepBitmaps();
+    gate.hidden = true; pwr.classList.remove('nudge');
+    screenEl.classList.remove('off');
+    showLock();
+  }
+  function showLock() {
+    lock.hidden = false;
+    lock.style.animation = 'none'; void lock.offsetWidth; lock.style.animation = '';
+    const d = new Date(), days = ['일', '월', '화', '수', '목', '금', '토'];
+    $('lockTime').textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+    $('lockDate').textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${days[d.getDay()]}요일`;
+    if (ac) softTone(660, 0.05, 0.2);
+  }
+  gate.addEventListener('click', powerOn);
+  pwr.addEventListener('click', powerOn);
+  // 잠금화면: 위로 밀거나 알림을 누르면 열린다
+  const lock = $('lock'), lockHint = $('lockHint');
+  let lockY = null;
+  function unlock() {
+    if (lock.classList.contains('away')) return;
+    home.hidden = false;
+    $('sbNet').textContent = '통신불가지역';
+    lock.classList.add('away');
+    if (ac) tick(ac.currentTime, 0.2, 1.3, master);
+    setTimeout(() => { lock.hidden = true; lock.classList.remove('away'); }, 380);
+  }
+  lock.addEventListener('pointerdown', e => { lockY = e.clientY; });
+  lock.addEventListener('pointermove', e => {
+    if (lockY === null) return;
+    const dy = Math.min(0, e.clientY - lockY);
+    lock.style.transition = 'none'; lock.style.transform = `translateY(${dy * 0.5}px)`;
+  });
+  lock.addEventListener('pointerup', e => {
+    const dy = lockY === null ? 0 : e.clientY - lockY;
+    lockY = null; lock.style.transition = ''; lock.style.transform = '';
+    if (dy < -60 || $('lockStack').contains(e.target)) unlock();
+    else { lockHint.classList.remove('bounce'); void lockHint.offsetWidth; lockHint.classList.add('bounce'); }
+  });
+
+  // 홈 화면에서 앱 말고 다른 곳을 누르면 거부한다
+  const homeItem = $('homeItem'), homeLabel = $('homeLabel'), homeTint = $('homeTint');
+  let nopeCount = 0;
+  function buzz() {
+    if (!ac) return;
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'square'; o.frequency.value = 72;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 300;
+    g.gain.setValueAtTime(0.0001, t);
+    [0, 0.13].forEach(d => { g.gain.setValueAtTime(0.22, t + d); g.gain.setValueAtTime(0.0001, t + d + 0.09); });
+    o.connect(lp).connect(g).connect(master); o.start(t); o.stop(t + 0.25);
+  }
+  home.addEventListener('pointerdown', e => {
+    if (homeApp.contains(e.target) || homeApp.dataset.used) return;
+    nopeCount++;
+    homeItem.classList.remove('nope'); void homeItem.offsetWidth; homeItem.classList.add('nope');
+    home.classList.remove('jolt'); void home.offsetWidth; home.classList.add('jolt');
+    homeTint.classList.add('on'); setTimeout(() => homeTint.classList.remove('on'), 60);
+    buzz();
+    if (navigator.vibrate) { try { navigator.vibrate([60, 40, 60]); } catch (err) {} }
+    // 누를 때마다 이름 몇 글자가 무작위 자리에서 네모로 깨진다
+    const name = [...'어둠탐사기록'];
+    const n = 1 + (Math.random() * 4 | 0);
+    for (let k = 0; k < n; k++) name[Math.random() * name.length | 0] = '■';
+    homeLabel.textContent = name.join('');
+    crackle(70, 0.12);
+    clearTimeout(homeLabel._t);
+    homeLabel._t = setTimeout(() => { homeLabel.textContent = '어둠탐사기록'; }, 420);
+    // 세 번째부터는 위에서 알림이 내려온다. 누를수록 문장이 망가진다
+    if (nopeCount >= 3) showBanner(nopeCount - 2);
+  });
+  const hbanner = $('hbanner'), hbannerText = $('hbannerText');
+  function brokenRecommend(level) {
+    let ch = [...'열람을 권장합니다'];
+    for (let k = 0; k < level; k++) {
+      const r = Math.random(), i = Math.random() * ch.length | 0;
+      if (r < 0.3) ch[i] = '■';
+      else if (r < 0.5) ch.splice(i, 0, ch[i], ch[i]);
+      else if (r < 0.65) ch[i] = String.fromCharCode(0xAC00 + (Math.random() * 11172 | 0));
+      else if (r < 0.8 && i < ch.length - 1) [ch[i], ch[i + 1]] = [ch[i + 1], ch[i]];
+      else ch.splice(i, 0, ['▒', '?', '_'][Math.random() * 3 | 0]);
+    }
+    return ch.slice(0, 26).join('');
+  }
+  function showBanner(level) {
+    hbannerText.textContent = level <= 1 ? '열람을 권장합니다' : brokenRecommend(level - 1);
+    hbanner.classList.remove('on'); void hbanner.offsetWidth; hbanner.classList.add('on');
+    if (ac) softTone(level > 3 ? 620 : 880, 0.06, 0.25);
+    clearTimeout(hbanner._t);
+    hbanner._t = setTimeout(() => hbanner.classList.remove('on'), 2600);
+  }
+  homeApp.addEventListener('click', () => {
+    if (homeApp.dataset.used) return;
+    homeApp.dataset.used = '1';
+    const sr = screenEl.getBoundingClientRect(), ir = homeApp.getBoundingClientRect();
+    const k = sr.width / screenEl.offsetWidth, sx = ir.width / sr.width, sy = ir.height / sr.height;
+    launch.style.transformOrigin = `${(ir.left - sr.left + ir.width / 2) / k}px ${(ir.top - sr.top + ir.height / 2) / k}px`;
+    launch.style.transition = 'none';
+    launch.style.transform = `scale(${sx}, ${sy})`;
+    launch.style.borderRadius = `${(ir.width * 0.3 / k) / sx}px / ${(ir.height * 0.3 / k) / sy}px`;
+    launch.hidden = false; void launch.offsetWidth;
+    launch.style.transition = 'transform .5s cubic-bezier(.25,.9,.3,1), border-radius .5s cubic-bezier(.25,.9,.3,1)';
+    launch.style.transform = 'none'; launch.style.borderRadius = '0';
+    if (ac) softTone(520, 0.06, 0.25);
+    setTimeout(() => { home.hidden = true; launch.classList.add('fade'); }, 700);
+    // 앱 로고가 사라지고 까만 화면이 되면 원래 시작 화면이 이어진다
+    setTimeout(() => { launch.hidden = true; launch.classList.remove('fade'); run(); }, 1500);
+  });
+
+  // 다 끝난 뒤: 전원 버튼이나 아래 바를 누르면 잠금화면으로 돌아간다
+  let ended = false;
+  const navpill = document.querySelector('.navpill');
+  function backToLock() {
+    if (!ended) return;
+    ended = false;
+    pwr.classList.remove('nudge'); navpill.classList.remove('tap');
+    reset();
+    delete homeApp.dataset.used; homeLabel.textContent = '어둠탐사기록';
+    nopeCount = 0; hbanner.classList.remove('on');
+    $('sbNet').textContent = '5G';
+    showLock();
+  }
+  pwr.addEventListener('click', backToLock);
+  navpill.addEventListener('click', backToLock);
+  // 기기 전체가 항상 보이도록 통째로 축소 (어제 폰과 같은 방식)
+  const phoneEl = document.querySelector('.phone');
+  function fit() {
+    const w = document.documentElement.clientWidth, h = document.documentElement.clientHeight;
+    const k = Math.min((h - 24) / phoneEl.offsetHeight, (w - 24) / phoneEl.offsetWidth, 1);
+    phoneEl.style.transform = `translate(-50%, -50%) scale(${k})`;
+  }
+  addEventListener('resize', fit); fit();
+  // 상태 표시줄 시계
+  (function clock() {
+    const d = new Date();
+    $('sbTime').textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+    setTimeout(clock, 15000);
+  })();
+})();
+</script>
+</body>
+</html>
