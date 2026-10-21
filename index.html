@@ -292,8 +292,7 @@
   .err {
     position: absolute; width: 268px; max-width: 78cqw;
     padding: 22px 22px 10px; border-radius: 26px;
-    background: rgba(252,252,252,.84); color: #111;
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    background: rgba(250,250,250,.9); color: #111;
     box-shadow: 0 10px 30px rgba(0,0,0,.35);
     font-family: "Roboto", "Noto Sans KR", sans-serif;
   }
@@ -510,18 +509,17 @@
   .mini {
     position: absolute; left: 0; top: 0; padding: 0; border: 0;
     border-radius: 4px; overflow: hidden; cursor: pointer; pointer-events: auto;
-    background: radial-gradient(ellipse 40% 20% at 70% 70%, rgba(70,52,30,.25), transparent 70%), linear-gradient(155deg, #6f7276 0%, #a9aca9 30%, #7f8284 55%, #b1b2ad 78%, #66686a 100%);
-    box-shadow: 0 3px 8px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.2), inset 0 0 8px rgba(40,30,20,.4);
+    background: linear-gradient(155deg, #535558 0%, #7f817f 30%, #5f6163 55%, #858684 78%, #4c4e4f 100%);
+    box-shadow: 0 2px 5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.15);
     display: flex; flex-direction: column; align-items: center;
-    filter: brightness(.75); will-change: transform;
   }
-  .mini:hover { filter: brightness(.95); }
+  .mini:hover { outline: 2px solid rgba(255,255,255,.6); outline-offset: -2px; }
   .mini i { display: block; }
   .mini__hole { width: 24%; height: 3%; margin-top: 8%; border-radius: 9px; background: #1b1c1e; }
   .mini__line { width: 58%; height: 1.6%; margin-top: 34%; background: rgba(255,255,255,.85); }
   .mini__line.s { width: 40%; margin-top: 7%; }
   /* 하얀 상자 */
-  .wbox { position: absolute; inset: 0; z-index: 37; display: grid; place-items: center; background: rgba(0,0,0,.35); }
+  .wbox { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(0,0,0,.35); }
   .wbox__text {
     margin: 0; padding: clamp(24px, 5cqh, 44px) clamp(26px, 5cqw, 56px);
     background: #f4f4f0; color: #111; border: 1px solid #000;
@@ -1981,7 +1979,7 @@
     let wait = false;
     try {
       wait = awaitStorm || awaitTouch || awaitTouch2 || awaitTouch3 || awaitVend || awaitNote || (noteReady && noteStep < NOTES.length - 1) ||
-        wReady || welcomeReady || finalReady || cardReady;
+        wReady || welcomeReady || finalReady || cardReady || (rainGeo && wStep < 0 && !rainRaf && !rain.hidden);
     } catch (e) { wait = false; }
     hint.classList.toggle('show', !!wait && gate.hidden);
   }, 200);
